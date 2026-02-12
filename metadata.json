@@ -1,0 +1,7 @@
+{
+  "name": "The Soul Piercer Pro",
+  "description": "A world-class spiritual sharpening tool that generates immersive devotionals, multi-day series, and cinematic romantic date stories with integrated audio narration.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
