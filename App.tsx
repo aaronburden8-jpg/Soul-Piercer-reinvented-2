@@ -51,12 +51,10 @@ const App: React.FC = () => {
       const dayNum = seriesContext ? seriesContext.currentDay : 1;
       const isSeries = !!seriesContext || mode === 'journey';
 
-      // Enhanced religious focus mapping
       const religiousContext = focus === 'non-denominational' 
-        ? 'Non-denominational Christian (Biblically grounded and Christ-centered)' 
+        ? 'Non-denominational Christian (Biblically grounded, Christ-centered, and Gospel-focused)' 
         : focus;
 
-      // Enhanced Prompt for longer Reflection and softened theme
       const prompt = `
         ACT AS: A soulful devotional writer and compassionate wisdom guide. 
         GOAL: Awaken spiritual hunger and provide deep, grounded hope. 
@@ -77,20 +75,23 @@ const App: React.FC = () => {
         FLOW OF CONTENT (STRICT ORDER):
         
         ### The Word
-        (Provide 1-2 expansive scriptures. Full text + reference. These scriptures set the anchor for the entire devotional.)
+        (Provide 1-2 expansive scriptures. Full text + reference.)
 
         ### First Light
         (A 1-line opening of clarity or gentle tension.)
 
         ${match ? `### Personal Briefing
         (A warm intro for ${match.profile.name}. 
-        MANDATORY CLOSING: End this section only with "${match.profile.signature}")` : ''}
+        MANDATORY CLOSING: End this section ONLY with "${match.profile.signature}")` : ''}
 
         ### The Story
-        (An immersive cinematic metaphor. Gritty, sensory, and beautiful. MIN 300 words.)
+        (An immersive cinematic metaphor. Gritty, sensory, and beautiful. 
+        LENGTH: Strictly between 200 and 300 words. Do not exceed 300 words.)
 
         ### The Reflection
-        (A DEEP, EXPANSIVE theological and heart-centered exploration. MANDATORY: You must connect the topic to the character of God and Biblical principles. For "non-denominational Christian", this means reflecting on the grace and truth of Jesus and the Word of God. Examine the core of the topic with compassion and depth. Provide at least 400-500 words of meat here.)
+        (A deep theological and heart-centered exploration. 
+        MANDATORY: You MUST explicitly connect the topic to the character of God, the grace of Jesus, and specific Biblical principles. 
+        LENGTH: Strictly between 200 and 300 words. Do not exceed 300 words.)
 
         ### Steps Forward
         (2 gentle, practical action steps.)
@@ -102,11 +103,11 @@ const App: React.FC = () => {
         (3 reflective diagnostic questions.)
 
         CONSTRAINTS: 
-        1. STRICTLY NO EM DASHES (—). Use a comma, colon, or a single short hyphen (-) instead.
+        1. STRICTLY PROHIBIT the long em dash character (—). Use a comma or a short hyphen (-) instead.
         2. Use words like "growth," "light," "anchors," and "paths." 
         3. No signatures outside the Personal Briefing section. 
         4. Generic profiles get no sign-off.
-        5. Ensure Biblical grounding is the foundation of the Reflection.
+        5. The Reflection MUST be Biblically grounded and Christ-centered.
       `;
 
       setStatusText(isSeries ? `PREPARING DAY ${dayNum} LIGHT...` : "SEEKING WISDOM...");

@@ -47,8 +47,8 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   const processLineText = (text: string) => {
     if (!text) return "";
     
-    // Sanitize em dashes just in case the model produces them
-    const sanitized = text.replace(/—/g, ' - ');
+    // Sanitize em dashes and double hyphens just in case the model produces them
+    const sanitized = text.replace(/—/g, ' - ').replace(/--/g, ' - ');
     
     // Match bold text **text**
     const parts = sanitized.split(/(\*\*.*?\*\*)/g);
