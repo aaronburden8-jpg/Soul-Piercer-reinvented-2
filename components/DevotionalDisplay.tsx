@@ -46,8 +46,12 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
 
   const processLineText = (text: string) => {
     if (!text) return "";
+    
+    // Sanitize em dashes just in case the model produces them
+    const sanitized = text.replace(/—/g, ' - ');
+    
     // Match bold text **text**
-    const parts = text.split(/(\*\*.*?\*\*)/g);
+    const parts = sanitized.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return <strong key={i} className="text-white font-bold">{part.slice(2, -2)}</strong>;
@@ -66,19 +70,18 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   const renderContent = (text: string, isLarge = false) => {
     return text.split('\n').map((line, i) => {
       const t = line.trim();
-      if (!t) return <div key={i} className="h-4"></div>;
+      if (!t) return <div key={i} className="h-6"></div>;
       
-      // Handle nested headers in content (common in Deep Dive)
       if (t.startsWith('### ')) {
-        return <h5 key={i} className="text-indigo-300 font-mono text-sm tracking-[0.3em] uppercase mt-10 mb-4 border-b border-indigo-500/20 pb-2">{processLineText(t.replace('### ', ''))}</h5>;
+        return <h5 key={i} className="text-indigo-300 font-mono text-sm tracking-[0.4em] uppercase mt-12 mb-6 border-b border-indigo-500/10 pb-3">{processLineText(t.replace('### ', ''))}</h5>;
       }
       if (t.startsWith('#### ')) {
-        return <h6 key={i} className="text-slate-300 font-bold text-lg mt-6 mb-2">{processLineText(t.replace('#### ', ''))}</h6>;
+        return <h6 key={i} className="text-slate-200 font-bold text-xl mt-8 mb-4">{processLineText(t.replace('#### ', ''))}</h6>;
       }
 
       if (t.startsWith('>')) {
         return (
-          <blockquote key={i} className="border-l-4 border-indigo-400 pl-8 my-10 italic text-white font-serif-display text-2xl leading-relaxed bg-indigo-500/10 py-8 pr-8 rounded-r-3xl shadow-lg">
+          <blockquote key={i} className="border-l-4 border-indigo-300 pl-10 my-12 italic text-white font-serif-display text-3xl leading-relaxed bg-indigo-500/10 py-10 pr-10 rounded-r-[3rem] shadow-2xl">
             {processLineText(t.replace('>', '').trim())}
           </blockquote>
         );
@@ -86,14 +89,14 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       
       if (t.startsWith('- ') || t.startsWith('* ')) {
         return (
-          <div key={i} className="flex gap-4 my-4 items-start pl-2">
-            <div className="mt-2.5 w-2 h-2 rounded-full bg-indigo-400 shrink-0 shadow-[0_0_10px_#818cf8]"></div>
-            <p className="text-slate-200 text-lg leading-relaxed">{processLineText(t.substring(2))}</p>
+          <div key={i} className="flex gap-6 my-5 items-start pl-4">
+            <div className="mt-3 w-2.5 h-2.5 rounded-full bg-indigo-300 shrink-0 aura-glow"></div>
+            <p className="text-slate-100 text-xl leading-relaxed">{processLineText(t.substring(2))}</p>
           </div>
         );
       }
 
-      return <p key={i} className={`my-6 text-slate-100 leading-relaxed font-normal ${isLarge ? 'text-xl' : 'text-lg'}`}>{processLineText(t)}</p>;
+      return <p key={i} className={`my-8 text-slate-100 leading-relaxed font-normal ${isLarge ? 'text-2xl' : 'text-xl'}`}>{processLineText(t)}</p>;
     });
   };
 
@@ -104,45 +107,45 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
     switch (title) {
       case 'The Word':
         return (
-          <div key={title} className="mb-14 animate-slide-up" style={{ animationDelay: delay }}>
-             <h4 className="text-emerald-300 font-mono text-[10px] tracking-[0.6em] uppercase mb-8 flex items-center gap-5">
-               <span className="w-12 h-px bg-emerald-400/30"></span> Divine Authority
+          <div key={title} className="mb-20 animate-slide-up" style={{ animationDelay: delay }}>
+             <h4 className="text-emerald-300 font-mono text-[11px] tracking-[0.6em] uppercase mb-10 flex items-center gap-6">
+               <span className="w-16 h-px bg-emerald-400/20"></span> Eternal Anchor
             </h4>
-            <div className="bg-emerald-500/15 border border-emerald-400/30 p-10 rounded-[2.5rem] italic font-serif-display text-3xl text-emerald-50 leading-relaxed shadow-[0_0_40px_rgba(52,211,153,0.1)]">
+            <div className="bg-emerald-500/10 border border-emerald-400/20 p-12 rounded-[3.5rem] italic font-serif-display text-4xl text-emerald-50 leading-relaxed shadow-2xl">
                {renderContent(content, true)}
             </div>
           </div>
         );
 
-      case 'Tactical Hook':
+      case 'First Light':
         return (
-          <div key={title} className="mb-12 animate-slide-up text-center border-b border-white/20 pb-10" style={{ animationDelay: delay }}>
-            <div className="text-indigo-300 font-mono text-[12px] tracking-[0.5em] uppercase mb-6">SIGNAL DETECTED</div>
-            <div className="text-3xl md:text-4xl font-serif-display italic text-white max-w-3xl mx-auto leading-tight drop-shadow-sm">
+          <div key={title} className="mb-16 animate-slide-up text-center border-b border-white/10 pb-12" style={{ animationDelay: delay }}>
+            <div className="text-indigo-300 font-mono text-[13px] tracking-[0.5em] uppercase mb-8">A MOMENT OF CLARITY</div>
+            <div className="text-4xl md:text-5xl font-serif-display italic text-white max-w-4xl mx-auto leading-tight drop-shadow-lg">
               {content}
             </div>
           </div>
         );
 
-      case 'Note from Aaron':
+      case 'Personal Briefing':
         return (
-          <div key={title} className="relative bg-white/10 border border-white/20 p-12 rounded-[3rem] mb-14 shadow-2xl animate-slide-up group overflow-hidden">
-            <div className="absolute top-0 right-0 p-10 flex flex-col items-end gap-4">
-               <div className="flex gap-2 h-6 items-end">
-                 {[1,2,3,4,5,6].map(i => <div key={i} className={`w-1.5 rounded-full bg-indigo-300/60 ${isPlaying ? 'animate-bounce' : ''}`} style={{ height: `${25 + Math.random() * 75}%`, animationDelay: `${i * 0.1}s` }}></div>)}
+          <div key={title} className="relative bg-white/10 border border-white/20 p-14 rounded-[4rem] mb-20 shadow-2xl animate-slide-up group overflow-hidden backdrop-blur-3xl">
+            <div className="absolute top-0 right-0 p-12 flex flex-col items-end gap-6">
+               <div className="flex gap-2.5 h-8 items-end">
+                 {[1,2,3,4,5,6].map(i => <div key={i} className={`w-2 rounded-full bg-indigo-200/50 ${isPlaying ? 'animate-bounce' : ''}`} style={{ height: `${30 + Math.random() * 70}%`, animationDelay: `${i * 0.1}s` }}></div>)}
                </div>
                <button 
                 onClick={() => handlePlayAudio(content)}
                 disabled={isPlaying}
-                className="w-14 h-14 rounded-3xl bg-indigo-500 hover:bg-indigo-400 transition-all flex items-center justify-center text-white shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50"
+                className="w-16 h-16 rounded-[2rem] bg-indigo-500 hover:bg-indigo-400 transition-all flex items-center justify-center text-white shadow-2xl hover:scale-110 active:scale-90 disabled:opacity-50"
               >
-                {isPlaying ? <Icons.Loader className="w-6 h-6" /> : <Icons.Play className="w-6 h-6" />}
+                {isPlaying ? <Icons.Loader className="w-7 h-7" /> : <Icons.Play className="w-7 h-7" />}
               </button>
             </div>
-            <h3 className="text-indigo-300 font-mono text-[11px] tracking-[0.4em] uppercase mb-10 flex items-center gap-4">
-              <Icons.Heart className="w-5 h-5" /> PERSONAL BRIEFING: AARON
+            <h3 className="text-indigo-200 font-mono text-[12px] tracking-[0.5em] uppercase mb-12 flex items-center gap-5">
+              <Icons.Heart className="w-6 h-6" /> HEART TO HEART
             </h3>
-            <div className="font-serif-display text-3xl italic text-white leading-snug pr-24">
+            <div className="font-serif-display text-4xl italic text-white leading-snug pr-32">
               {renderContent(content, true)}
             </div>
           </div>
@@ -150,23 +153,35 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
 
       case 'The Story':
         return (
-          <div key={title} className="mb-20 animate-slide-up" style={{ animationDelay: delay }}>
-            <h4 className="text-slate-300 font-mono text-[10px] tracking-[0.6em] uppercase mb-10 flex items-center gap-5">
-               <span className="w-12 h-px bg-slate-600"></span> Mission Dossier: Narrative
+          <div key={title} className="mb-24 animate-slide-up" style={{ animationDelay: delay }}>
+            <h4 className="text-slate-300 font-mono text-[11px] tracking-[0.7em] uppercase mb-12 flex items-center gap-6">
+               <span className="w-20 h-px bg-slate-700"></span> THE UNFOLDING STORY
             </h4>
-            <div className="text-slate-100 bg-white/[0.05] p-10 md:p-16 rounded-[3.5rem] border border-white/20 shadow-xl">
+            <div className="text-slate-50 bg-white/[0.04] p-12 md:p-20 rounded-[4.5rem] border border-white/10 shadow-2xl">
                {renderContent(content)}
             </div>
           </div>
         );
 
-      case 'Key Thoughts':
+      case 'The Reflection':
         return (
-          <div key={title} className="bg-indigo-500/20 border-y border-indigo-400/40 py-16 my-16 animate-slide-up text-center shadow-[inset_0_0_80px_rgba(99,102,241,0.1)]" style={{ animationDelay: delay }}>
-            <h3 className="text-indigo-100 font-mono text-[11px] tracking-[0.6em] uppercase mb-10">Strategic Objectives</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto px-8">
+          <div key={title} className="mb-24 animate-slide-up" style={{ animationDelay: delay }}>
+            <h4 className="text-indigo-300 font-mono text-[11px] tracking-[0.7em] uppercase mb-12 flex items-center gap-6">
+               <span className="w-20 h-px bg-indigo-500/20"></span> DEEP WATERS
+            </h4>
+            <div className="px-6 md:px-12">
+               {renderContent(content)}
+            </div>
+          </div>
+        );
+
+      case 'Wisdom Anchors':
+        return (
+          <div key={title} className="bg-indigo-500/20 border-y border-indigo-400/30 py-20 my-20 animate-slide-up text-center shadow-2xl" style={{ animationDelay: delay }}>
+            <h3 className="text-indigo-100 font-mono text-[12px] tracking-[0.7em] uppercase mb-12">ANCHORS FOR THE SOUL</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto px-10">
               {content.split('\n').filter(l => l.trim()).map((thought, i) => (
-                <div key={i} className="p-8 bg-white/10 rounded-3xl border border-white/20 italic font-serif-display text-2xl text-white text-left shadow-lg hover:border-indigo-400/40 transition-colors">
+                <div key={i} className="p-10 bg-white/5 rounded-[3rem] border border-white/20 italic font-serif-display text-3xl text-white text-left shadow-2xl hover:border-indigo-300/40 transition-all scale-100 hover:scale-[1.02]">
                   {processLineText(thought.replace(/^\d+\.\s*/, ''))}
                 </div>
               ))}
@@ -174,17 +189,17 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           </div>
         );
 
-      case 'Heart Check':
+      case 'Heart Mirror':
         return (
-          <div key={title} className="bg-red-400/15 border border-red-400/30 p-12 rounded-[3rem] my-16 animate-slide-up shadow-lg" style={{ animationDelay: delay }}>
-             <h4 className="text-red-300 font-mono text-[11px] tracking-[0.6em] uppercase mb-10 flex items-center gap-4">
-               <Icons.Target className="w-5 h-5 text-red-400" /> Integrity Diagnostic
+          <div key={title} className="bg-white/5 border border-white/10 p-16 rounded-[4rem] my-24 animate-slide-up shadow-2xl" style={{ animationDelay: delay }}>
+             <h4 className="text-slate-300 font-mono text-[12px] tracking-[0.7em] uppercase mb-12 flex items-center gap-6">
+               <Icons.Target className="w-6 h-6 text-indigo-300 opacity-50" /> THE HEART MIRROR
              </h4>
-             <div className="space-y-8">
+             <div className="space-y-10">
                 {content.split('\n').filter(l => l.trim()).map((q, i) => (
-                  <div key={i} className="flex gap-6 items-start group">
-                    <span className="font-mono text-[14px] text-red-400/80 mt-1">[{i+1}]</span>
-                    <p className="text-slate-50 text-xl group-hover:text-white transition-colors drop-shadow-sm">{processLineText(q.replace(/^\d+\.\s*/, ''))}</p>
+                  <div key={i} className="flex gap-8 items-start group">
+                    <span className="font-mono text-[15px] text-indigo-300 mt-1">[{i+1}]</span>
+                    <p className="text-slate-50 text-2xl group-hover:text-white transition-colors drop-shadow-md leading-relaxed">{processLineText(q.replace(/^\d+\.\s*/, ''))}</p>
                   </div>
                 ))}
              </div>
@@ -193,11 +208,11 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
 
       default:
         return (
-          <div key={title} className="mb-14 animate-slide-up" style={{ animationDelay: delay }}>
-            <h4 className="text-slate-300 font-mono text-[10px] tracking-[0.5em] uppercase mb-8 flex items-center gap-4">
-              <span className="w-8 h-px bg-slate-600"></span> {title}
+          <div key={title} className="mb-16 animate-slide-up" style={{ animationDelay: delay }}>
+            <h4 className="text-slate-400 font-mono text-[11px] tracking-[0.6em] uppercase mb-10 flex items-center gap-6">
+              <span className="w-12 h-px bg-slate-800"></span> {title}
             </h4>
-            <div className="text-slate-200 px-4">
+            <div className="text-slate-100 px-6">
               {renderContent(content)}
             </div>
           </div>
@@ -206,20 +221,19 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   };
 
   return (
-    <div className="space-y-10">
-      <div className="glass-panel p-10 md:p-20 rounded-[4rem] relative border border-white/30 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] overflow-hidden">
-        {/* Lighter mesh background for content */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #818cf8 0%, transparent 40%), radial-gradient(circle at 80% 80%, #34d399 0%, transparent 40%)' }}></div>
+    <div className="space-y-12">
+      <div className="glass-panel p-12 md:p-24 rounded-[5rem] relative border border-white/20 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.7)] overflow-hidden">
+        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 10% 10%, #818cf8 0%, transparent 50%), radial-gradient(circle at 90% 90%, #f472b6 0%, transparent 50%)' }}></div>
         
-        <div className="absolute top-12 right-12 opacity-50 hidden md:block">
-          <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-white border border-white/30 px-5 py-2 rounded-full bg-white/10 backdrop-blur-sm">
-            SAT_TOKEN: {devotional.id.slice(-6)}
+        <div className="absolute top-14 right-14 opacity-50 hidden md:block">
+          <span className="font-mono text-[11px] uppercase tracking-[0.5em] text-white border border-white/20 px-8 py-3 rounded-full bg-white/10 backdrop-blur-md shadow-2xl">
+            WISDOM_SESSION: {devotional.id.slice(-4)}
           </span>
         </div>
         
         {sections.map((section, i) => renderSection(section, i))}
 
-        <div className="mt-24 pt-16 border-t border-white/20">
+        <div className="mt-32 pt-20 border-t border-white/10">
           <button 
             onClick={async () => {
               if (isDiving) return;
@@ -229,16 +243,16 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
               setIsDiving(false);
             }}
             disabled={isDiving}
-            className="w-full py-10 rounded-[2.5rem] bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-mono text-[12px] tracking-[0.5em] uppercase hover:bg-emerald-500/30 hover:border-emerald-300/50 transition-all flex items-center justify-center gap-5 disabled:opacity-50 shadow-2xl hover:scale-[1.01]"
+            className="w-full py-12 rounded-[3.5rem] bg-white/5 border border-white/20 text-indigo-200 font-mono text-[13px] tracking-[0.6em] uppercase hover:bg-white/10 hover:border-indigo-300/40 transition-all flex items-center justify-center gap-6 disabled:opacity-50 shadow-2xl hover:scale-[1.01]"
           >
-            {isDiving ? <Icons.Loader className="w-6 h-6" /> : <><Icons.Dive className="w-5 h-5" /> Deploy Tactical Deep Dive</>}
+            {isDiving ? <Icons.Loader className="w-7 h-7" /> : <><Icons.Dive className="w-6 h-6" /> SEEK THEOLOGICAL DEPTH</>}
           </button>
 
           {diveContent && (
-            <div className="mt-12 bg-slate-900/90 p-12 rounded-[3.5rem] border border-emerald-400/30 animate-slide-up shadow-2xl relative overflow-hidden backdrop-blur-xl">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-80"></div>
-              <h4 className="text-emerald-300 font-mono text-[11px] tracking-[0.5em] uppercase mb-10 flex items-center gap-4">
-                <div className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_15px_#34d399]"></div> INTEL_REPORT: THEOLOGICAL_ANALYSIS
+            <div className="mt-16 bg-slate-900/80 p-16 rounded-[4.5rem] border border-white/10 animate-slide-up shadow-2xl relative overflow-hidden backdrop-blur-3xl">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-indigo-400 to-transparent opacity-60"></div>
+              <h4 className="text-indigo-200 font-mono text-[12px] tracking-[0.6em] uppercase mb-12 flex items-center gap-5">
+                <div className="w-3.5 h-3.5 rounded-full bg-indigo-400 aura-glow"></div> HISTORICAL_INTEL_ANALYSIS
               </h4>
               <div className="text-left">
                 {renderContent(diveContent)}

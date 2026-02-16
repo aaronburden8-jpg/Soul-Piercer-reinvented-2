@@ -3,10 +3,10 @@ import React from 'react';
 import { Profile, TacticalLens } from './types';
 
 export const LENS_CONFIG: Record<TacticalLens, { description: string, icon: any }> = {
-  [TacticalLens.EXPLORER]: { description: "Pioneering new depths, cinematic metaphors, gritty narrative.", icon: "Compass" },
-  [TacticalLens.STRATEGIST]: { description: "Tactical maneuvers, spiritual discipline, high-level objectives.", icon: "Map" },
-  [TacticalLens.ARCHITECT]: { description: "Building foundations, structural integrity, logical patterns.", icon: "Layout" },
-  [TacticalLens.HEALER]: { description: "Restorative grace, healing wounds, safety and identity.", icon: "ShieldAlert" }
+  [TacticalLens.EXPLORER]: { description: "Discovering new depths and cinematic narratives through story.", icon: "Compass" },
+  [TacticalLens.STRATEGIST]: { description: "Focused discipline and the architecture of a purposeful life.", icon: "Map" },
+  [TacticalLens.ARCHITECT]: { description: "Building lasting foundations through logical spiritual patterns.", icon: "Layout" },
+  [TacticalLens.HEALER]: { description: "Restorative grace, healing the heart, and finding safe identity.", icon: "ShieldAlert" }
 };
 
 export const PROFILES: Record<string, Profile> = {

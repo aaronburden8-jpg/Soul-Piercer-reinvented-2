@@ -17,13 +17,19 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
 
 export const generateDeepDive = async (content: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Act as an expert theologian and historical researcher. Perform a Tactical Deep Dive on the following briefing. 
-  Focus on: Original language (Greek/Hebrew), historical context, and archetypal patterns.
+  const prompt = `Act as an expert theologian and historical researcher with a deep commitment to Biblical truth. 
+  Perform a Theological and Historical Deep Dive on the following briefing. 
+  
+  Focus on: 
+  1. Original language (Greek/Hebrew) insights.
+  2. Historical context that illuminates the scripture.
+  3. Archetypal patterns rooted in Biblical history.
   
   BRIEFING CONTENT:
   ${content}
 
-  Format: Highly structured with headers. Use bullet points for readability. No em dashes.`;
+  Format: Highly structured with headers. Use bullet points for readability. 
+  CONSTRAINT: STRICTLY NO EM DASHES (—). Use a colon or hyphen instead. Ensure everything is Christ-centered and Biblically faithful.`;
   
   const response = await ai.models.generateContent({
     model: 'gemini-flash-latest',

@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Soul Piercer Pro | Command Center</title>
+    <title>The Soul Piercer | Sanctuary</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --app-bg: #0f172a;
-            --accent: #818cf8;
-            --emerald: #34d399;
-            --panel-bg: rgba(30, 41, 59, 0.7);
+            --app-bg: #1e293b;
+            --accent: #a5b4fc;
+            --emerald: #6ee7b7;
+            --panel-bg: rgba(255, 255, 255, 0.03);
         }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--app-bg);
+            background-color: #0f172a;
             background-image: 
-                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
-                linear-gradient(to bottom, #0f172a, #1e293b);
-            color: #f8fafc;
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            color: #f1f5f9;
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -28,70 +28,43 @@
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         
         .glass-panel {
-            background: var(--panel-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
         }
         
-        .pierce-gradient {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        .luminous-gradient {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
         }
         
         .text-gradient {
-            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            background: linear-gradient(135deg, #f8fafc 30%, #94a3b8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .scanline {
-            width: 100%;
-            height: 4px;
-            z-index: 100;
-            background: linear-gradient(to right, transparent, rgba(129, 140, 248, 0.1), transparent);
-            position: fixed;
-            top: 0;
-            animation: scanlineMove 8s linear infinite;
-            pointer-events: none;
+        .aura-glow {
+            animation: aura-pulse 6s infinite ease-in-out;
         }
 
-        @keyframes scanlineMove {
-            0% { transform: translateY(-10vh); opacity: 0; }
-            50% { opacity: 0.5; }
-            100% { transform: translateY(110vh); opacity: 0; }
-        }
-
-        .active-glow {
-            animation: pulse-glow 3s infinite ease-in-out;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(168, 85, 247, 0.5); }
+        @keyframes aura-pulse {
+            0%, 100% { filter: drop-shadow(0 0 15px rgba(129, 140, 248, 0.2)); }
+            50% { filter: drop-shadow(0 0 35px rgba(192, 132, 252, 0.4)); }
         }
 
         .animate-slide-up {
-            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-        .mesh-grid {
-            position: fixed;
-            inset: 0;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: -1;
-        }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
     </style>
 <script type="importmap">
 {
@@ -107,8 +80,6 @@
 </script>
 </head>
 <body>
-    <div class="mesh-grid"></div>
-    <div class="scanline"></div>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>
