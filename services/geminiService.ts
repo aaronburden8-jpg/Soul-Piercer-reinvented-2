@@ -18,13 +18,17 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
 
 export const generateDeepDive = async (content: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Deep Dive (Theology/History/Greek/Context) on this content:\n\n${content}\n\nNote: Provide a highly structured, academic but accessible breakdown. Do not use em dashes. Use headers and bullets.`;
+  const prompt = `Deep Dive (Theology/History/Greek/Context) on this content:
+
+${content}
+
+Note: Provide a highly structured, academic but accessible breakdown. Do not use em dashes. Use headers and bullets.`;
   
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-3-flash-preview',
     contents: prompt,
     config: {
-      thinkingConfig: { thinkingBudget: 32768 }
+      thinkingConfig: { thinkingBudget: 24576 }
     }
   });
   return response.text;

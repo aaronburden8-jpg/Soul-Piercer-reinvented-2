@@ -79,7 +79,8 @@ const App: React.FC = () => {
         }
       }
 
-      const text = await generateDevotionalText(prompt, mode === 'strike' ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview');
+      // Senior Engineer: Switched to 'gemini-3-flash-preview' for both modes to utilize the free tier quota reliably.
+      const text = await generateDevotionalText(prompt, 'gemini-3-flash-preview');
       
       const newDevo: Devotional = {
         id: `v3_${Date.now()}`,
