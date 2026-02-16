@@ -1,6 +1,5 @@
-import { GoogleGenAI, Modality, Type } from "@google/genai";
 
-// API Key is exclusively sourced from process.env.API_KEY to ensure security.
+import { GoogleGenAI, Modality } from "@google/genai";
 
 export const generateDevotionalText = async (prompt: string, model: string = 'gemini-flash-latest') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -8,9 +7,9 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
     model,
     contents: prompt,
     config: {
-      temperature: 0.8,
+      temperature: 0.9,
       topP: 0.95,
-      topK: 40,
+      topK: 64,
     }
   });
   return response.text;
@@ -18,19 +17,17 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
 
 export const generateDeepDive = async (content: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Deep Dive (Theology/History/Greek/Context) on this content:
+  const prompt = `Act as an expert theologian and historical researcher. Perform a Tactical Deep Dive on the following briefing. 
+  Focus on: Original language (Greek/Hebrew), historical context, and archetypal patterns.
+  
+  BRIEFING CONTENT:
+  ${content}
 
-${content}
-
-Note: Provide a highly structured, academic but accessible breakdown. Do not use em dashes. Use headers and bullets.`;
+  Format: Highly structured with headers. Use bullet points for readability. No em dashes.`;
   
   const response = await ai.models.generateContent({
     model: 'gemini-flash-latest',
-    contents: prompt,
-    config: {
-      // thinkingConfig is only available for Gemini 3 and 2.5 series.
-      // We rely on the raw intelligence of the 1.5 Flash production model here.
-    }
+    contents: prompt
   });
   return response.text;
 };
@@ -40,7 +37,7 @@ export const generateAudio = async (text: string) => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text: `Say with warm, personal affection as if recording a voice note for a loved one: ${text}` }] }],
+      contents: [{ parts: [{ text: `Say with warm, authentic, personal affection as if recording a voice note for someone you deeply care about: ${text}` }] }],
       config: {
         responseModalities: [Modality.AUDIO],
         speechConfig: {

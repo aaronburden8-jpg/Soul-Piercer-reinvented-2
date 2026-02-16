@@ -1,9 +1,12 @@
 
-export enum Structure {
-  STANDARD = 'Standard',
-  DATE_STORY = 'DATE_STORY',
-  SCHOLAR = 'SCHOLAR'
+export enum TacticalLens {
+  EXPLORER = 'Explorer',
+  STRATEGIST = 'Strategist',
+  ARCHITECT = 'Architect',
+  HEALER = 'Healer'
 }
+
+export type SpiritualFocus = 'non-denominational' | 'catholic' | 'theosophist';
 
 export interface Profile {
   name: string;
@@ -14,6 +17,7 @@ export interface Profile {
   themes?: string[];
   structure: string;
   special_instructions?: string;
+  audience_type: 'adult' | 'teen' | 'spouse';
 }
 
 export interface DevotionalSection {
@@ -27,17 +31,14 @@ export interface Devotional {
   timestamp: number;
   input: string;
   lens: string;
-  series?: {
-    topic: string;
-    current: number;
-    total: number;
-  } | null;
-  audioData?: string; // Base64 PCM data for the "Note"
+  seriesDay?: number;
+  seriesTotal?: number;
 }
 
 export interface ActiveSeries {
   topic: string;
-  current: number;
-  total: number;
-  nextDay: number;
+  currentDay: number;
+  totalDays: number;
+  lens: TacticalLens;
+  focus: SpiritualFocus;
 }
