@@ -1,11 +1,8 @@
-
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 
-// Use process.env.API_KEY directly as required by guidelines. 
-// Do not generate UI for API keys or fallback to other methods.
+// API Key is exclusively sourced from process.env.API_KEY to ensure security.
 
 export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
-  // Always instantiate GoogleGenAI right before the call to ensure latest API key usage.
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model,
@@ -27,7 +24,6 @@ export const generateDeepDive = async (content: string) => {
     model: 'gemini-3-pro-preview',
     contents: prompt,
     config: {
-      // Set a larger thinking budget for complex tasks as recommended.
       thinkingConfig: { thinkingBudget: 32768 }
     }
   });
@@ -69,7 +65,6 @@ export const decodeBase64Audio = (base64: string) => {
 };
 
 export const playAudioBuffer = async (data: Uint8Array, audioCtx: AudioContext) => {
-  // Guidelines state that audio bytes from the API are raw PCM data.
   const dataInt16 = new Int16Array(data.buffer);
   const numChannels = 1;
   const sampleRate = 24000;
