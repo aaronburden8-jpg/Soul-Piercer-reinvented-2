@@ -150,7 +150,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
               if (isDiving) return;
               setIsDiving(true);
               const res = await generateDeepDive(devotional.content);
-              setDiveContent(res);
+              setDiveContent(res ?? null);
               setIsDiving(false);
             }}
             disabled={isDiving}
