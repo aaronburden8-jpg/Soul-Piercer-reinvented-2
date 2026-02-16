@@ -2,7 +2,7 @@ import { GoogleGenAI, Modality, Type } from "@google/genai";
 
 // API Key is exclusively sourced from process.env.API_KEY to ensure security.
 
-export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
+export const generateDevotionalText = async (prompt: string, model: string = 'gemini-flash-latest') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model,
@@ -25,10 +25,11 @@ ${content}
 Note: Provide a highly structured, academic but accessible breakdown. Do not use em dashes. Use headers and bullets.`;
   
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-flash-latest',
     contents: prompt,
     config: {
-      thinkingConfig: { thinkingBudget: 24576 }
+      // thinkingConfig is only available for Gemini 3 and 2.5 series.
+      // We rely on the raw intelligence of the 1.5 Flash production model here.
     }
   });
   return response.text;

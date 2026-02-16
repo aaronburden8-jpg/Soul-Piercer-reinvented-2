@@ -79,8 +79,8 @@ const App: React.FC = () => {
         }
       }
 
-      // Senior Engineer: Switched to 'gemini-3-flash-preview' for both modes to utilize the free tier quota reliably.
-      const text = await generateDevotionalText(prompt, 'gemini-3-flash-preview');
+      // Senior Engineer: Switched to 'gemini-flash-latest' (Production Workhorse) for maximum reliability and quota stability.
+      const text = await generateDevotionalText(prompt, 'gemini-flash-latest');
       
       const newDevo: Devotional = {
         id: `v3_${Date.now()}`,
