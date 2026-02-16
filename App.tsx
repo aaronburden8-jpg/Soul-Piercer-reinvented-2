@@ -14,6 +14,7 @@ const App: React.FC = () => {
   const [momentum, setMomentum] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<'glimpse' | 'journey'>('glimpse');
+  const [journeyDays, setJourneyDays] = useState(7);
   const [focus, setFocus] = useState<SpiritualFocus>('non-denominational');
   const [selectedLens, setSelectedLens] = useState<TacticalLens>(TacticalLens.EXPLORER);
   const [activeSeries, setActiveSeries] = useState<ActiveSeries | null>(null);
@@ -50,19 +51,26 @@ const App: React.FC = () => {
       const lensInfo = LENS_CONFIG[selectedLens];
       const dayNum = seriesContext ? seriesContext.currentDay : 1;
       const isSeries = !!seriesContext || mode === 'journey';
+      const totalDays = seriesContext ? seriesContext.totalDays : journeyDays;
 
       const religiousContext = focus === 'non-denominational' 
-        ? 'Non-denominational Christian (Biblically grounded, Christ-centered, and Gospel-focused)' 
+        ? 'Non-denominational Christian (Biblically grounded, Christ-centered, focusing on the Gospel of Grace)' 
         : focus;
 
       const prompt = `
         ACT AS: A soulful devotional writer and compassionate wisdom guide. 
         GOAL: Awaken spiritual hunger and provide deep, grounded hope. 
         TONE: Luminous, warm, expansive, and deeply personal. 
-        RELIGIOUS FOCUS: ${religiousContext}. Every section must be rooted in Biblical truth and Christian theology.
+        RELIGIOUS FOCUS: ${religiousContext}. Every section must be rooted in Biblical truth.
         WISDOM PATH: ${selectedLens} (${lensInfo.description})
         
-        ${isSeries ? `JOURNEY STATUS: Day ${dayNum} of 7` : 'GLIMPSE STATUS: A single moment of clarity.'}
+        ${isSeries ? `JOURNEY STATUS: Day ${dayNum} of ${totalDays}. 
+        This is a PROGRESSIVE NARRATIVE ARC spanning ${totalDays} days. 
+        - Early Phase (approx. first 25% of days): Establishing the spiritual tension and the foundation of the path.
+        - Middle Phase (approx. middle 50% of days): Deepening complexity, trials of the heart, persistent growth, and the "messy middle."
+        - Final Phase (approx. final 25% of days): The synthesis of wisdom and the ultimate complex realization of the topic.
+        MANDATORY: Do not repeat previous day narrative beats. Advance the story chapter-by-chapter. Build to a sophisticated climax.` : 'GLIMPSE STATUS: A single moment of clarity.'}
+        
         TOPIC: ${targetInput}
         
         ${match ? `
@@ -86,12 +94,14 @@ const App: React.FC = () => {
 
         ### The Story
         (An immersive cinematic metaphor. Gritty, sensory, and beautiful. 
-        LENGTH: Strictly between 200 and 300 words. Do not exceed 300 words.)
+        LENGTH: Strictly between 200 and 300 words. 
+        JOURNEY NOTE: This must feel like a specific "chapter" of a larger ${totalDays}-day story. Avoid summary; move into new territory.)
 
         ### The Reflection
         (A deep theological and heart-centered exploration. 
-        MANDATORY: You MUST explicitly connect the topic to the character of God, the grace of Jesus, and specific Biblical principles. 
-        LENGTH: Strictly between 200 and 300 words. Do not exceed 300 words.)
+        MANDATORY: You MUST explicitly connect the topic to the character of God, the grace of Jesus, and Biblical principles. 
+        LENGTH: Strictly between 200 and 300 words. 
+        CONTENT: Do not repeat the story. Provide new theological insight building toward a complex conceptual realization.)
 
         ### Steps Forward
         (2 gentle, practical action steps.)
@@ -103,14 +113,12 @@ const App: React.FC = () => {
         (3 reflective diagnostic questions.)
 
         CONSTRAINTS: 
-        1. STRICTLY PROHIBIT the long em dash character (—). Use a comma or a short hyphen (-) instead.
-        2. Use words like "growth," "light," "anchors," and "paths." 
-        3. No signatures outside the Personal Briefing section. 
-        4. Generic profiles get no sign-off.
-        5. The Reflection MUST be Biblically grounded and Christ-centered.
+        1. STRICTLY NO EM DASHES (—). Use a comma, colon, or a single short hyphen (-) instead.
+        2. NO REPETITION across the ${totalDays}-day Journey arc.
+        3. Reflection MUST be Christian-Biblical for non-denominational focus.
       `;
 
-      setStatusText(isSeries ? `PREPARING DAY ${dayNum} LIGHT...` : "SEEKING WISDOM...");
+      setStatusText(isSeries ? `PREPARING DAY ${dayNum} CHAPTER...` : "SEEKING WISDOM...");
       const text = await generateDevotionalText(prompt, 'gemini-flash-latest');
       
       const newDevo: Devotional = {
@@ -120,7 +128,7 @@ const App: React.FC = () => {
         input: targetInput,
         lens: `${selectedLens}: ${match ? match.profile.name : 'Broad Spectrum'}`,
         seriesDay: isSeries ? dayNum : undefined,
-        seriesTotal: isSeries ? 7 : undefined
+        seriesTotal: isSeries ? totalDays : undefined
       };
 
       setDevotional(newDevo);
@@ -132,14 +140,14 @@ const App: React.FC = () => {
         const newSeries: ActiveSeries = {
           topic: targetInput,
           currentDay: 1,
-          totalDays: 7,
+          totalDays: totalDays,
           lens: selectedLens,
           focus: focus
         };
         setActiveSeries(newSeries);
         localStorage.setItem('soul_piercer_active_series', JSON.stringify(newSeries));
       } else if (seriesContext) {
-        if (seriesContext.currentDay < 7) {
+        if (seriesContext.currentDay < seriesContext.totalDays) {
           const updatedSeries = { ...seriesContext, currentDay: seriesContext.currentDay + 1 };
           setActiveSeries(updatedSeries);
           localStorage.setItem('soul_piercer_active_series', JSON.stringify(updatedSeries));
@@ -206,7 +214,7 @@ const App: React.FC = () => {
               </div>
               <div>
                 <h4 className="text-[11px] font-mono font-black uppercase tracking-widest text-indigo-300">Active Journey</h4>
-                <p className="text-white font-serif-display text-xl italic">{activeSeries.topic} <span className="text-slate-400 not-italic text-sm ml-3">— Day {activeSeries.currentDay}/7</span></p>
+                <p className="text-white font-serif-display text-xl italic">{activeSeries.topic} <span className="text-slate-400 not-italic text-sm ml-3">— Day {activeSeries.currentDay}/{activeSeries.totalDays}</span></p>
               </div>
             </div>
             <button 
@@ -238,16 +246,30 @@ const App: React.FC = () => {
             </div>
 
             <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
-              <div className="flex gap-3 p-2 glass-panel rounded-3xl border border-white/10">
+              <div className="flex gap-3 p-2 glass-panel rounded-3xl border border-white/10 items-center">
                 {['glimpse', 'journey'].map(m => (
                   <button 
                     key={m}
                     onClick={() => setMode(m as any)}
-                    className={`px-12 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === m ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === m ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}
                   >
                     {m}
                   </button>
                 ))}
+                
+                {mode === 'journey' && (
+                  <div className="flex items-center gap-3 px-6 border-l border-white/10 animate-slide-up">
+                    <span className="font-mono text-[9px] text-slate-500 uppercase tracking-widest font-bold">Days:</span>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="30" 
+                      value={journeyDays}
+                      onChange={(e) => setJourneyDays(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
+                      className="w-14 bg-white/5 border border-white/10 rounded-xl px-2 py-2 text-center text-white font-mono text-sm focus:outline-none focus:border-indigo-400/40"
+                    />
+                  </div>
+                )}
               </div>
 
                <div className="flex gap-2 p-2 glass-panel rounded-3xl border border-white/10 w-full md:w-auto">
@@ -263,7 +285,7 @@ const App: React.FC = () => {
               <textarea 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={mode === 'glimpse' ? "Seek clarity on a topic, heart-focus, or scripture..." : "Describe a 7-day Journey focus..."}
+                placeholder={mode === 'glimpse' ? "Seek clarity on a topic, heart-focus, or scripture..." : "Describe a Journey focus..."}
                 className="w-full glass-panel rounded-[3.5rem] p-12 md:p-20 text-3xl md:text-4xl font-serif-display italic text-white placeholder:text-slate-700 focus:outline-none min-h-[400px] resize-none transition-all focus:border-indigo-400/40 shadow-inner leading-relaxed"
               />
               
@@ -284,7 +306,7 @@ const App: React.FC = () => {
                   className="px-16 py-6 rounded-3xl luminous-gradient text-white font-mono text-[12px] font-black uppercase tracking-[0.4em] shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-20 flex items-center gap-5"
                 >
                   {loading ? <Icons.Loader className="w-5 h-5" /> : <Icons.Send className="w-5 h-5" />}
-                  {loading ? "BREATHING..." : `EXPLORE ${mode.toUpperCase()}`}
+                  {loading ? "BREATHING..." : mode === 'journey' ? `START ${journeyDays}-DAY JOURNEY` : `EXPLORE GLIMPSE`}
                 </button>
               </div>
             </div>
