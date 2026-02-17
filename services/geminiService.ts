@@ -16,7 +16,40 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
   return response.text;
 };
 
-// Deep dives upgraded to gemini-3-pro-preview for complex reasoning and advanced historical/theological research.
+// Streaming version of the deep dive for better performance and user feedback.
+export const generateDeepDiveStream = async (content: string, onChunk: (text: string) => void) => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const prompt = `Act as an expert theologian and historical researcher. 
+  Perform a Theological and Historical Deep Dive on the following briefing. 
+  
+  Focus on: 
+  1. Original language (Greek/Hebrew) insights.
+  2. Historical context.
+  3. Biblical archetypes.
+  
+  BRIEFING CONTENT:
+  ${content}
+
+  Format: Clear headers (###), bullet points. No em-dashes. Be concise but profound.`;
+  
+  const responseStream = await ai.models.generateContentStream({
+    model: 'gemini-3-pro-preview',
+    contents: prompt,
+    config: {
+      temperature: 0.7,
+      maxOutputTokens: 2000
+    }
+  });
+
+  for await (const chunk of responseStream) {
+    const text = chunk.text;
+    if (text) {
+      onChunk(text);
+    }
+  }
+};
+
+// Keeping original as fallback if needed, but the UI will pivot to streaming.
 export const generateDeepDive = async (content: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Act as an expert theologian and historical researcher. 
