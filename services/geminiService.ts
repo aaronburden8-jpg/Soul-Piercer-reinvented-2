@@ -1,7 +1,8 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-export const generateDevotionalText = async (prompt: string, model: string = 'gemini-flash-latest') => {
+// Use gemini-3-pro-preview for complex reasoning tasks as per guidelines.
+export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-pro-preview') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model,
@@ -12,9 +13,11 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
       topK: 64,
     }
   });
+  // Use .text property as per guidelines.
   return response.text;
 };
 
+// Use gemini-3-pro-preview for advanced reasoning and theological analysis.
 export const generateDeepDive = async (content: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Act as an expert theologian and historical researcher with a deep commitment to Biblical truth. 
@@ -32,12 +35,14 @@ export const generateDeepDive = async (content: string) => {
   CONSTRAINT: STRICTLY NO EM DASHES (—). Use a colon or hyphen instead. Ensure everything is Christ-centered and Biblically faithful.`;
   
   const response = await ai.models.generateContent({
-    model: 'gemini-flash-latest',
+    model: 'gemini-3-pro-preview',
     contents: prompt
   });
+  // Use .text property as per guidelines.
   return response.text;
 };
 
+// generateAudio remains on gemini-2.5-flash-preview-tts as it is specifically for TTS.
 export const generateAudio = async (text: string) => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -54,6 +59,7 @@ export const generateAudio = async (text: string) => {
       },
     });
 
+    // Extracting audio bytes from candidates correctly.
     const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     return base64Audio;
   } catch (err) {
@@ -62,6 +68,7 @@ export const generateAudio = async (text: string) => {
   }
 };
 
+// Manual implementation of base64 decoding as recommended.
 export const decodeBase64Audio = (base64: string) => {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -72,12 +79,16 @@ export const decodeBase64Audio = (base64: string) => {
   return bytes;
 };
 
-export const playAudioBuffer = async (data: Uint8Array, audioCtx: AudioContext) => {
+// Split audio processing into decoding and playing following the guidelines.
+export const decodeAudioData = async (
+  data: Uint8Array,
+  ctx: AudioContext,
+  sampleRate: number,
+  numChannels: number,
+): Promise<AudioBuffer> => {
   const dataInt16 = new Int16Array(data.buffer);
-  const numChannels = 1;
-  const sampleRate = 24000;
   const frameCount = dataInt16.length / numChannels;
-  const buffer = audioCtx.createBuffer(numChannels, frameCount, sampleRate);
+  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
 
   for (let channel = 0; channel < numChannels; channel++) {
     const channelData = buffer.getChannelData(channel);
@@ -85,7 +96,11 @@ export const playAudioBuffer = async (data: Uint8Array, audioCtx: AudioContext) 
       channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
     }
   }
+  return buffer;
+};
 
+export const playAudioBuffer = async (data: Uint8Array, audioCtx: AudioContext) => {
+  const buffer = await decodeAudioData(data, audioCtx, 24000, 1);
   const source = audioCtx.createBufferSource();
   source.buffer = buffer;
   source.connect(audioCtx.destination);

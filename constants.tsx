@@ -9,7 +9,8 @@ export const LENS_CONFIG: Record<TacticalLens, { description: string, icon: any 
   [TacticalLens.HEALER]: { description: "Find restoration, comfort, and emotional alignment.", icon: "ShieldAlert" },
   [TacticalLens.WILDERNESS]: { description: "Surrender to the unexpected. Receive a unique, unpredictably generated perspective.", icon: "Wind" },
   [TacticalLens.MARRIAGE]: { description: "Walk the covenant together. Shared wisdom for unity, love, and partnership.", icon: "Heart" },
-  [TacticalLens.WHOLEHEART]: { description: "Embrace your undivided season. Wisdom for purpose, completeness, and strength.", icon: "Target" }
+  [TacticalLens.WHOLEHEART]: { description: "Embrace your undivided season. Wisdom for purpose, completeness, and strength.", icon: "Target" },
+  [TacticalLens.LENT]: { description: "40 days of liturgical sharpening. Walk the covenant through prayer, fasting, and mercy.", icon: "Crosshair" }
 };
 
 export const PROFILES: Record<string, Profile> = {

@@ -15,7 +15,8 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
 
   const isMarriagePath = devotional.lens.toLowerCase().includes('marriage');
   const isWholeheartPath = devotional.lens.toLowerCase().includes('wholeheart');
-  const isSeasonPath = isMarriagePath || isWholeheartPath;
+  const isLentPath = devotional.lens.toLowerCase().includes('lent');
+  const isSeasonPath = isMarriagePath || isWholeheartPath || isLentPath;
 
   const parseSections = (markdown: string): DevotionalSection[] => {
     const parts = markdown.split(/^###\s+(.+)$/gm);
@@ -73,11 +74,11 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       
       if (t.startsWith('### ')) {
         const titleText = t.replace('### ', '');
-        const headerColor = isMarriagePath ? 'text-amber-500' : isWholeheartPath ? 'text-cyan-100' : 'text-amber-500';
+        const headerColor = isLentPath ? 'text-purple-400' : isMarriagePath ? 'text-amber-500' : isWholeheartPath ? 'text-cyan-100' : 'text-amber-500';
         return (
           <div key={i} className="flex flex-col items-center gap-6 mt-20 mb-12">
             <h5 className={`${headerColor} font-mono text-2xl tracking-[0.2em] uppercase text-center`}>{processLineText(titleText)}</h5>
-            <div className={`w-24 h-px ${isMarriagePath ? 'bg-amber-500/30' : isWholeheartPath ? 'bg-cyan-100/30' : 'bg-amber-500/30'}`}></div>
+            <div className={`w-24 h-px ${isLentPath ? 'bg-purple-400/30' : isMarriagePath ? 'bg-amber-500/30' : isWholeheartPath ? 'bg-cyan-100/30' : 'bg-amber-500/30'}`}></div>
           </div>
         );
       }
@@ -87,13 +88,14 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   };
 
   const renderSeasonHeader = (title: string, subtitle?: string) => {
-    const headerColor = isMarriagePath ? 'text-amber-500' : isWholeheartPath ? 'text-cyan-100' : 'text-amber-500';
+    const headerColor = isLentPath ? 'text-purple-400' : isMarriagePath ? 'text-amber-500' : isWholeheartPath ? 'text-cyan-100' : 'text-amber-500';
+    const accentColor = isLentPath ? 'purple' : isMarriagePath ? 'amber' : 'cyan';
     return (
       <div className="flex flex-col items-center gap-8 mb-16 pt-12">
         <h4 className={`${headerColor} font-mono text-2xl tracking-[0.2em] uppercase text-center font-black`}>
           {title}
         </h4>
-        <div className={`w-32 h-0.5 bg-gradient-to-r from-transparent via-${isMarriagePath ? 'amber' : 'cyan'}-500/40 to-transparent`}></div>
+        <div className={`w-32 h-0.5 bg-gradient-to-r from-transparent via-${accentColor}-500/40 to-transparent`}></div>
         {subtitle && <p className="text-slate-400 font-mono text-[10px] tracking-[0.6em] uppercase -mt-4">{subtitle}</p>}
       </div>
     );
@@ -103,14 +105,15 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
     const { title, content } = section;
     const delay = `${index * 0.1}s`;
 
-    const cardBorder = isMarriagePath ? 'rgba(245, 158, 11, 0.2)' : isWholeheartPath ? 'rgba(207, 250, 254, 0.2)' : 'rgba(255,255,255,0.1)';
+    const cardBorder = isLentPath ? 'rgba(168, 85, 247, 0.2)' : isMarriagePath ? 'rgba(245, 158, 11, 0.2)' : isWholeheartPath ? 'rgba(207, 250, 254, 0.2)' : 'rgba(255,255,255,0.1)';
 
-    switch (title) {
-      case 'Header':
+    switch (true) {
+      case title.includes('Header'):
+        const headerColorClass = isLentPath ? 'text-purple-400' : isMarriagePath ? 'text-amber-500' : isWholeheartPath ? 'text-cyan-100' : 'text-amber-500';
         return (
           <div key={title} className="mb-24 animate-slide-up text-center border-b border-white/5 pb-20" style={{ animationDelay: delay }}>
-             <h4 className={`font-mono text-[11px] tracking-[0.8em] uppercase mb-12 flex justify-center items-center gap-6 ${isMarriagePath ? 'text-amber-500' : isWholeheartPath ? 'text-cyan-100' : 'text-amber-500'}`}>
-               <span className="w-12 h-px bg-white/10"></span> {isMarriagePath ? 'COVENANT PROTOCOL' : isWholeheartPath ? 'UNDIVIDED FOCUS' : 'DIVINE DECREE'} <span className="w-12 h-px bg-white/10"></span>
+             <h4 className={`font-mono text-[11px] tracking-[0.8em] uppercase mb-12 flex justify-center items-center gap-6 ${headerColorClass}`}>
+               <span className="w-12 h-px bg-white/10"></span> {isLentPath ? 'WALK THE COVENANT' : isMarriagePath ? 'COVENANT PROTOCOL' : isWholeheartPath ? 'UNDIVIDED FOCUS' : 'DIVINE DECREE'} <span className="w-12 h-px bg-white/10"></span>
             </h4>
             <div className="font-serif-display text-5xl md:text-7xl text-white italic leading-tight mb-10 max-w-4xl mx-auto">
                {renderContent(content.split('\n')[0], true)}
@@ -121,26 +124,24 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           </div>
         );
 
-      case 'The Reality':
-      case 'Part 1: The Insight':
-      case 'The Insight':
-      case 'The Reframing':
-      case 'The Story':
-      case 'The Reflection':
+      case title.includes('Reality'):
+      case title.includes('Insight'):
+      case title.includes('Reflection'):
+      case title.includes('Reframing'):
+      case title.includes('Story'):
         const displayTitle = title.includes(':') ? title.split(':')[1].trim().toUpperCase() : title.toUpperCase();
         return (
           <div key={title} className="mb-28 animate-slide-up" style={{ animationDelay: delay }}>
-            {renderSeasonHeader(displayTitle, isWholeheartPath ? 'Strategic Perspective' : 'Relational Depth')}
+            {renderSeasonHeader(displayTitle, isLentPath ? 'Liturgical Sharpening' : isWholeheartPath ? 'Strategic Perspective' : 'Relational Depth')}
             <div className="text-slate-50 bg-white/[0.03] p-12 md:p-20 rounded-[4.5rem] border border-white/5 shadow-inner leading-relaxed">
                {renderContent(content)}
             </div>
           </div>
         );
 
-      case 'The Mirror':
-      case 'Part 2: The Exchange':
-      case 'The Exchange':
-      case 'Heart Mirror':
+      case title.includes('Mirror'):
+      case title.includes('Exchange'):
+      case title.includes('Heart Mirror'):
         const mirrorTitle = title.includes(':') ? title.split(':')[1].trim().toUpperCase() : title.toUpperCase();
         return (
           <div key={title} className="my-28 animate-slide-up" style={{ animationDelay: delay }}>
@@ -160,11 +161,10 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           </div>
         );
 
-      case 'The Anchor':
-      case 'Part 3: The Cord':
-      case 'The Cord':
+      case title.includes('Anchor'):
+      case title.includes('Cord'):
         const cordTitle = title.includes(':') ? title.split(':')[1].trim().toUpperCase() : title.toUpperCase();
-        const glowColor = isMarriagePath ? 'rgba(245,158,11,0.15)' : isWholeheartPath ? 'rgba(207, 250, 254, 0.15)' : 'rgba(255,255,255,0.05)';
+        const glowColor = isLentPath ? 'rgba(168, 85, 247, 0.15)' : isMarriagePath ? 'rgba(245,158,11,0.15)' : isWholeheartPath ? 'rgba(207, 250, 254, 0.15)' : 'rgba(255,255,255,0.05)';
         return (
           <div key={title} className="mt-32 mb-16 animate-slide-up text-center" style={{ animationDelay: delay }}>
             <div className="bg-white/5 border border-white/10 p-16 rounded-[5rem] shadow-2xl relative max-w-4xl mx-auto overflow-hidden" style={{ boxShadow: `0 0 120px ${glowColor}` }}>
@@ -180,7 +180,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           </div>
         );
 
-      case 'The Word':
+      case title.includes('Word'):
         return (
           <div key={title} className="mb-20 animate-slide-up" style={{ animationDelay: delay }}>
              <h4 className="text-emerald-300 font-mono text-sm tracking-[0.6em] uppercase mb-10 flex items-center gap-6">
