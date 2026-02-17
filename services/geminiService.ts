@@ -1,12 +1,12 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// Standard devotional generation using Flash for high speed and consistent quality.
+// Using gemini-3-flash-preview for Basic Text Tasks like devotional generation to ensure high quality and speed.
 export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model,
-    contents: [{ parts: [{ text: prompt }] }],
+    contents: prompt,
     config: {
       temperature: 0.8,
       topP: 0.95,
@@ -16,52 +16,56 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
   return response.text;
 };
 
-/**
- * Theological and Historical Deep Dive via Streaming.
- * Uses Gemini 3 Pro for superior reasoning and historical accuracy.
- */
+// Streaming version of the deep dive for better performance and user feedback.
+// Fixed: Explicitly disabling thinking budget to ensure faster response times and avoid 'thinking' related blocks.
 export const generateDeepDiveStream = async (content: string, onChunk: (text: string) => void) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
   const prompt = `Act as an expert theologian and historical researcher. 
-  Perform an exhaustive Theological and Historical Deep Dive on the following briefing. 
+  Perform a Theological and Historical Deep Dive on the following briefing. 
   
   Focus on: 
-  1. Etymological analysis of key Greek or Hebrew terms.
-  2. Cultural and historical context of the time.
-  3. Connection to grand Biblical archetypes and meta-narratives.
+  1. Original language (Greek/Hebrew) insights.
+  2. Historical context.
+  3. Biblical archetypes.
   
   BRIEFING CONTENT:
   ${content}
 
-  Format using clear headers (###) and avoid long dashes. Be profound, academic yet accessible, and soul-sharpening.`;
+  Format: Clear headers (###), bullet points. No em-dashes. Be concise but profound.`;
   
-  try {
-    const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-3-pro-preview',
-      contents: [{ parts: [{ text: prompt }] }],
-      config: {
-        temperature: 0.7,
-        thinkingConfig: { thinkingBudget: 0 } // Disable thinking for immediate streaming results
-      }
-    });
-
-    for await (const chunk of responseStream) {
-      const text = chunk.text;
-      if (text) {
-        onChunk(text);
-      }
+  const responseStream = await ai.models.generateContentStream({
+    model: 'gemini-3-pro-preview',
+    contents: [{ parts: [{ text: prompt }] }],
+    config: {
+      temperature: 0.7,
+      // Disabling thinking to maximize streaming speed and avoid the response being empty or delayed
+      thinkingConfig: { thinkingBudget: 0 }
     }
-  } catch (error) {
-    console.error("Deep Dive Stream Error:", error);
-    throw error;
+  });
+
+  for await (const chunk of responseStream) {
+    const text = chunk.text;
+    if (text) {
+      onChunk(text);
+    }
   }
 };
 
-// Simplified non-streaming version (fallback)
+// Keeping original as fallback if needed.
 export const generateDeepDive = async (content: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Perform a deep theological dive on: ${content}`;
+  const prompt = `Act as an expert theologian and historical researcher. 
+  Perform a Theological and Historical Deep Dive on the following briefing. 
+  
+  Focus on: 
+  1. Original language (Greek/Hebrew) insights.
+  2. Historical context.
+  3. Biblical archetypes.
+  
+  BRIEFING CONTENT:
+  ${content}
+
+  Format: Clear headers, bullet points. No em-dashes.`;
   
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
@@ -73,7 +77,7 @@ export const generateDeepDive = async (content: string) => {
   return response.text;
 };
 
-// Audio generation using the specialized TTS model.
+// Generates audio using the specialized gemini-2.5-flash-preview-tts model for high-quality speech.
 export const generateAudio = async (text: string) => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -81,7 +85,7 @@ export const generateAudio = async (text: string) => {
       model: "gemini-2.5-flash-preview-tts",
       contents: [{ parts: [{ text: `Say with warm, authentic affection: ${text}` }] }],
       config: {
-        responseModalalities: [Modality.AUDIO],
+        responseModalities: [Modality.AUDIO],
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: { voiceName: 'Kore' },
@@ -98,6 +102,7 @@ export const generateAudio = async (text: string) => {
   }
 };
 
+// Decodes a base64 string into a Uint8Array.
 export const decodeBase64Audio = (base64: string) => {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -108,6 +113,7 @@ export const decodeBase64Audio = (base64: string) => {
   return bytes;
 };
 
+// Decodes raw PCM audio data into an AudioBuffer.
 export const decodeAudioData = async (
   data: Uint8Array,
   ctx: AudioContext,
@@ -127,6 +133,7 @@ export const decodeAudioData = async (
   return buffer;
 };
 
+// Helper function to play an audio buffer through the destination.
 export const playAudioBuffer = async (data: Uint8Array, audioCtx: AudioContext) => {
   const buffer = await decodeAudioData(data, audioCtx, 24000, 1);
   const source = audioCtx.createBufferSource();
