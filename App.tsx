@@ -5,7 +5,6 @@ import { Devotional, ActiveSeries, TacticalLens, SpiritualFocus } from './types'
 import { generateDevotionalText } from './services/geminiService';
 import DevotionalDisplay from './components/DevotionalDisplay';
 
-// Define the categorized pathways for UI rendering
 const pathways = [
   TacticalLens.EXPLORER,
   TacticalLens.STRATEGIST,
@@ -14,7 +13,6 @@ const pathways = [
   TacticalLens.WILDERNESS,
 ];
 
-// Define the categorized spiritual seasons for UI rendering
 const seasons = [
   TacticalLens.MARRIAGE,
   TacticalLens.WHOLEHEART,
@@ -90,71 +88,51 @@ const App: React.FC = () => {
   }, [input]);
 
   const getSystemPrompt = (lens: TacticalLens, religiousContext: string, match: any, isSeries: boolean, dayNum: number, totalDays: number) => {
-    const baseConstraint = "STRICTLY PROHIBITED: Do not mention 'Lenses', 'Paths', 'Tactical Lenses', or internal metadata names in your output. Focus entirely on Scripture and the human soul.";
+    const baseConstraint = "STRICTLY PROHIBITED: Do not mention 'Lenses', 'Paths', 'Tactical Lenses', or internal metadata names in your output. Focus entirely on Scripture.";
 
     if (lens === TacticalLens.LENT) {
-      return `
-        SYSTEM INSTRUCTION FOR LENT WALK THE COVENANT (40-DAY CATHOLIC SEASON):
-        ACT AS: Expert Catholic Liturgical Guide. Direct, deep, and soul-piercing.
-        ${baseConstraint}
-        
+      return `ACT AS: Expert Catholic Liturgical Guide. Direct and deep. ${baseConstraint}
         ### Header
         "Walk the Covenant" - Day ${dayNum}: [Liturgical Title]
-        Scripture: [Bible Verse Reference] - [Thematic Paraphrase]
-        
+        Scripture: [Verse]
         ### The Hook
-        A sharp, evocative 1-2 sentence emotional opening.
+        One sharp sentence.
         ### Part 1: The Story
-        CONTENT: 200-300 words. Gritty, relatable narrative.
+        200 words narrative.
         ### Part 2: The Reflection
-        CONTENT: 200-300 words. Deep Catholic theological reflection.
+        200 words theology.
         ### Part 3: The Exchange
-        Two deep, piercing Examen-style questions.
+        Two Examen questions.
         ### Part 4: The Cord
-        A powerful 3-sentence prayer.
-      `;
+        3-sentence prayer.`;
     }
 
     if (lens === TacticalLens.MARRIAGE) {
-      return `
-        SYSTEM INSTRUCTION FOR SACRED MARRIAGE MEDITATION:
-        ACT AS: Expert Devotional Designer for Couples.
-        FOCUS: Unity, covenantal love, and Christ as the center.
-        ${baseConstraint}
+      return `ACT AS: Devotional Designer for Couples. ${baseConstraint}
         ### Header: Title + Scripture.
-        ### The Word: [Bible Verse Reference]
-        ### The Shared Story: 200-300 words involving a couple's journey.
-        ### The Spiritual Union: 200-300 words of biblical wisdom for husband and wife.
-        ### The Mirror: Two questions for the couple.
-        ### The Cord: A 3-sentence closing prayer for the marriage.
-      `;
+        ### The Word: [Verse]
+        ### The Shared Story: 200 words.
+        ### The Spiritual Union: 200 words.
+        ### The Mirror: Two questions.
+        ### The Cord: 3-sentence prayer.`;
     }
 
     if (lens === TacticalLens.WHOLEHEART) {
-      return `
-        SYSTEM INSTRUCTION FOR WHOLEHEARTED DEVOTION:
-        ACT AS: Mentor to the Dedicated Soul.
-        FOCUS: Single-minded pursuit of God and purpose.
-        ${baseConstraint}
+      return `ACT AS: Mentor for Wholeheartedness. ${baseConstraint}
         ### Header: Title + Scripture.
-        ### The Word: [Bible Verse Reference]
-        ### The Narrative: 200-300 words on an undivided heart.
-        ### The Eternal Perspective: 200-300 words of theological grounding.
-        ### The Heart Mirror: Two piercing questions.
-        ### The Anchor: A bold 3-sentence prayer.
-      `;
+        ### The Word: [Verse]
+        ### The Narrative: 200 words.
+        ### The Eternal Perspective: 200 words.
+        ### The Heart Mirror: Two questions.
+        ### The Anchor: 3-sentence prayer.`;
     }
     
-    return `
-      ACT AS: A soulful devotional writer and compassionate wisdom guide. 
-      RELIGIOUS FOCUS: ${religiousContext}.
-      ${baseConstraint}
-      ### The Word: [Scripture Reference]
-      ### The Story: 200-300 words of a relatable human narrative.
-      ### The Reflection: 200-300 words of theological analysis.
-      ### Heart Mirror: Two sharp questions.
-      ### The Anchor: A 3-sentence closing prayer.
-    `;
+    return `ACT AS: Soulful devotional guide. Focus: ${religiousContext}. ${baseConstraint}
+      ### The Word: [Verse]
+      ### The Story: 200 words.
+      ### The Reflection: 200 words.
+      ### Heart Mirror: Two questions.
+      ### The Anchor: 3-sentence prayer.`;
   };
 
   const handleGenerate = async (seriesContext?: ActiveSeries) => {
@@ -186,9 +164,9 @@ const App: React.FC = () => {
         TOPIC: ${finalTopic}
       `;
 
-      setStatusText(isSeries ? `PREPARING DAY ${currentDay} CHAPTER...` : "SEEKING WISDOM...");
-      // Switched to gemini-3-flash-preview as per the instructions to use a high-quota flash model.
-      const text = await generateDevotionalText(prompt, 'gemini-3-flash-preview');
+      setStatusText(isSeries ? `PREPARING DAY ${currentDay} CHAPTER...` : "SEEKING...");
+      // Forcing the use of the Lite model to ensure high quota availability
+      const text = await generateDevotionalText(prompt, 'gemini-flash-lite-latest');
       
       const newDevo: Devotional = {
         id: `v4_${Date.now()}`,
@@ -232,7 +210,10 @@ const App: React.FC = () => {
       setInput("");
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
-      setError(err.message || "Connection lost.");
+      // Better error parsing for Gemini API issues
+      let msg = err.message || "An unknown error occurred.";
+      if (msg.includes('429')) msg = "Quota limit reached. Switched to Lite model for higher limits, but it seems you've exhausted your free tier. Please wait a few moments.";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -256,7 +237,7 @@ const App: React.FC = () => {
       performReset();
     } else {
       setAbandonConfirm(true);
-      setTimeout(() => setAbandonConfirm(false), 3000);
+      setTimeout(() => setAbandonConfirm(false), 5000);
     }
   };
 
@@ -297,7 +278,6 @@ const App: React.FC = () => {
 
   const renderActiveDashboard = () => {
     if (!activeSeries) return null;
-    const isLent = activeSeries.lens === TacticalLens.LENT;
     const progress = Math.max(0, Math.min(100, ((activeSeries.currentDay - 1) / activeSeries.totalDays) * 100));
     const IconComp = (Icons as any)[LENS_CONFIG[activeSeries.lens].icon];
 
@@ -309,15 +289,15 @@ const App: React.FC = () => {
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-8">
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white border border-white/10 ${isLent ? 'bg-purple-500/20' : 'bg-indigo-500/20'}`}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white border border-white/10 bg-indigo-500/20">
                 <IconComp className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-[0.5em] mb-2">Current Meditation</h3>
+                <h3 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-[0.5em] mb-2">Active Journey</h3>
                 <div className="flex items-center gap-4">
-                  <span className="text-2xl font-serif-display text-white italic">{activeSeries.topic}</span>
+                  <span className="text-2xl font-serif-display text-white italic truncate max-w-[200px] md:max-w-xs">{activeSeries.topic}</span>
                   <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-mono text-indigo-300 uppercase tracking-widest font-bold">
-                    Day {activeSeries.currentDay} of {activeSeries.totalDays}
+                    Day {activeSeries.currentDay} / {activeSeries.totalDays}
                   </div>
                 </div>
               </div>
@@ -325,18 +305,18 @@ const App: React.FC = () => {
             <div className="flex items-center gap-4">
               <button 
                 onClick={handleAbandonRequest} 
-                className={`px-6 py-5 rounded-2xl transition-all font-mono text-[9px] font-black uppercase tracking-widest flex items-center gap-3 ${abandonConfirm ? 'bg-red-500 text-white scale-110 shadow-lg' : 'bg-red-500/5 hover:bg-red-500/20 border border-red-500/10 text-red-400/80 hover:text-red-400'}`}
+                className={`px-6 py-5 rounded-2xl transition-all font-mono text-[9px] font-black uppercase tracking-widest flex items-center gap-3 ${abandonConfirm ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.5)] animate-pulse' : 'bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400'}`}
               >
                 <Icons.Target className="w-4 h-4" />
-                {abandonConfirm ? "CONFIRM ABANDON?" : "ABANDON JOURNEY"}
+                {abandonConfirm ? "CONFIRM RESET?" : "ABANDON JOURNEY"}
               </button>
               <button 
                 onClick={() => handleGenerate(activeSeries)}
                 disabled={loading}
-                className="px-10 py-5 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white font-mono text-[11px] font-black uppercase tracking-[0.3em] shadow-xl transition-all flex items-center gap-4 group"
+                className="px-10 py-5 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white font-mono text-[11px] font-black uppercase tracking-[0.3em] shadow-xl transition-all flex items-center gap-4 group disabled:opacity-50"
               >
                 {loading ? <Icons.Loader className="w-4 h-4" /> : <Icons.Play className="w-4 h-4" />}
-                {loading ? "SEEKING..." : "ENTER DAY " + activeSeries.currentDay}
+                {loading ? "SEEKING..." : `START DAY ${activeSeries.currentDay}`}
               </button>
             </div>
           </div>
@@ -353,10 +333,10 @@ const App: React.FC = () => {
             <Icons.Crosshair className="w-10 h-10" />
           </div>
           <div>
-            <h1 className="text-3xl font-black uppercase tracking-tighter text-gradient font-serif-display leading-none">The Soul Piercer <span className="text-[14px] font-mono not-italic text-indigo-300 opacity-60 ml-2">v4.2 Sanctuary</span></h1>
+            <h1 className="text-3xl font-black uppercase tracking-tighter text-gradient font-serif-display leading-none">The Soul Piercer <span className="text-[14px] font-mono not-italic text-indigo-300 opacity-60 ml-2">v4.3 Sanctuary</span></h1>
             <div className="flex items-center gap-5 mt-3">
               <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-[0.3em] flex items-center gap-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div> SOUL_CONNECTED
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div> CONNECTED_LITE
               </span>
               <div className="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
               <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-[0.3em]">MOMENTUM: {momentum}</span>
@@ -369,15 +349,21 @@ const App: React.FC = () => {
             className="px-6 py-4 flex items-center gap-3 rounded-2xl bg-white/5 hover:bg-white/10 text-slate-300 transition-all border border-white/10 shadow-lg group" 
           >
             <Icons.Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Sanctuary Home</span>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Sanctuary</span>
           </button>
         </div>
       </header>
 
       <main className="relative">
         {error && (
-          <div className="mb-10 bg-red-500/10 border border-red-500/20 p-8 rounded-3xl text-red-200 font-mono text-[12px] text-center uppercase tracking-[0.3em]">
-            [NOTICE] {error}
+          <div className="mb-10 bg-red-500/10 border border-red-500/20 p-8 rounded-3xl text-red-200 font-mono text-[12px] flex flex-col items-center gap-4 text-center uppercase tracking-[0.1em]">
+            <div className="flex items-center gap-3 text-red-400 font-bold">
+              <Icons.ShieldAlert className="w-5 h-5" /> [TRANSMISSION_ERROR]
+            </div>
+            <p className="max-w-2xl opacity-80">{error}</p>
+            <button onClick={performReset} className="mt-4 px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white text-[10px] font-bold tracking-widest">
+              FORCE SYSTEM RESET
+            </button>
           </div>
         )}
 
@@ -390,7 +376,7 @@ const App: React.FC = () => {
                </div>
                <div className="flex items-center gap-6 my-4">
                   <div className="h-px flex-1 bg-white/10"></div>
-                  <span className="font-mono text-[10px] text-slate-500 tracking-[0.5em] uppercase font-black">Spiritual Seasons</span>
+                  <span className="font-mono text-[10px] text-slate-500 tracking-[0.5em] uppercase font-black">Sacred Seasons</span>
                   <div className="h-px flex-1 bg-white/10"></div>
                </div>
                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
@@ -400,8 +386,8 @@ const App: React.FC = () => {
 
             <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
               <div className="flex gap-3 p-2 glass-panel rounded-3xl border border-white/10 items-center">
-                <button onClick={() => setMode('glimpse')} className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'glimpse' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}>Single Insight</button>
-                <button onClick={() => setMode('journey')} className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'journey' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}>Biblical Journey</button>
+                <button onClick={() => setMode('glimpse')} className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'glimpse' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}>Glimpse</button>
+                <button onClick={() => setMode('journey')} className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'journey' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}>Journey</button>
                 {mode === 'journey' && selectedLens !== TacticalLens.LENT && !activeSeries && (
                   <div className="flex items-center gap-3 px-6 border-l border-white/10">
                     <span className="font-mono text-[9px] text-slate-500 uppercase tracking-widest font-bold">Days:</span>
@@ -430,7 +416,7 @@ const App: React.FC = () => {
                       handleGenerate();
                     }
                   }}
-                  placeholder={selectedLens === TacticalLens.LENT ? "Focusing on Walk the Covenant: 40 Days of Lent..." : "Enter your prayer focus or meditation topic..."} 
+                  placeholder={selectedLens === TacticalLens.LENT ? "Awaiting Walk the Covenant: 40 Days of Lent..." : "Enter your prayer focus or topic..."} 
                   className="w-full glass-panel rounded-[3.5rem] p-12 md:p-20 text-3xl md:text-4xl font-serif-display italic text-white placeholder:text-slate-700 focus:outline-none min-h-[400px] resize-none transition-all leading-relaxed" 
                 />
                 <div className="absolute bottom-12 right-12 flex items-center gap-6">
@@ -456,10 +442,10 @@ const App: React.FC = () => {
               {activeSeries && (
                 <button 
                   onClick={handleAbandonRequest} 
-                  className={`px-6 py-3 rounded-xl transition-all font-mono text-[9px] font-black uppercase tracking-widest flex items-center gap-3 ${abandonConfirm ? 'bg-red-500 text-white' : 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10'}`}
+                  className={`px-6 py-3 rounded-xl transition-all font-mono text-[9px] font-black uppercase tracking-widest flex items-center gap-3 ${abandonConfirm ? 'bg-red-500 text-white shadow-lg animate-pulse' : 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10'}`}
                 >
                   <Icons.Target className="w-4 h-4" />
-                  {abandonConfirm ? "CONFIRM STOP SERIES?" : "STOP JOURNEY"}
+                  {abandonConfirm ? "CONFIRM STOP?" : "STOP JOURNEY"}
                 </button>
               )}
             </div>

@@ -1,54 +1,50 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// Updated to gemini-3-flash-preview for higher quota and lower latency while adhering to guidelines.
-export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
+// Using gemini-flash-lite-latest to avoid 429 quota limits while maintaining high speed.
+export const generateDevotionalText = async (prompt: string, model: string = 'gemini-flash-lite-latest') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model,
     contents: prompt,
     config: {
-      temperature: 0.9,
+      temperature: 0.8,
       topP: 0.95,
-      topK: 64,
+      topK: 40,
     }
   });
-  // Use .text property as per guidelines.
   return response.text;
 };
 
-// Updated to gemini-3-flash-preview to resolve quota limitations.
+// Deep dives also moved to lite model for stability.
 export const generateDeepDive = async (content: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Act as an expert theologian and historical researcher with a deep commitment to Biblical truth. 
+  const prompt = `Act as an expert theologian and historical researcher. 
   Perform a Theological and Historical Deep Dive on the following briefing. 
   
   Focus on: 
   1. Original language (Greek/Hebrew) insights.
-  2. Historical context that illuminates the scripture.
-  3. Archetypal patterns rooted in Biblical history.
+  2. Historical context.
+  3. Biblical archetypes.
   
   BRIEFING CONTENT:
   ${content}
 
-  Format: Highly structured with headers. Use bullet points for readability. 
-  CONSTRAINT: STRICTLY NO EM DASHES (—). Use a colon or hyphen instead. Ensure everything is Christ-centered and Biblically faithful.`;
+  Format: Clear headers, bullet points. No em-dashes.`;
   
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-flash-lite-latest',
     contents: prompt
   });
-  // Use .text property as per guidelines.
   return response.text;
 };
 
-// generateAudio remains on gemini-2.5-flash-preview-tts as it is specifically for TTS.
 export const generateAudio = async (text: string) => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text: `Say with warm, authentic, personal affection as if recording a voice note for someone you deeply care about: ${text}` }] }],
+      contents: [{ parts: [{ text: `Say with warm, authentic affection: ${text}` }] }],
       config: {
         responseModalities: [Modality.AUDIO],
         speechConfig: {
@@ -59,7 +55,6 @@ export const generateAudio = async (text: string) => {
       },
     });
 
-    // Extracting audio bytes from candidates correctly.
     const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     return base64Audio;
   } catch (err) {
@@ -68,7 +63,6 @@ export const generateAudio = async (text: string) => {
   }
 };
 
-// Manual implementation of base64 decoding as recommended.
 export const decodeBase64Audio = (base64: string) => {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -79,7 +73,6 @@ export const decodeBase64Audio = (base64: string) => {
   return bytes;
 };
 
-// Split audio processing into decoding and playing following the guidelines.
 export const decodeAudioData = async (
   data: Uint8Array,
   ctx: AudioContext,
