@@ -187,7 +187,8 @@ const App: React.FC = () => {
       `;
 
       setStatusText(isSeries ? `PREPARING DAY ${currentDay} CHAPTER...` : "SEEKING WISDOM...");
-      const text = await generateDevotionalText(prompt, 'gemini-3-pro-preview');
+      // Switched to gemini-3-flash-preview as per the instructions to use a high-quota flash model.
+      const text = await generateDevotionalText(prompt, 'gemini-3-flash-preview');
       
       const newDevo: Devotional = {
         id: `v4_${Date.now()}`,

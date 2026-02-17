@@ -1,8 +1,8 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// Use gemini-3-pro-preview for complex reasoning tasks as per guidelines.
-export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-pro-preview') => {
+// Updated to gemini-3-flash-preview for higher quota and lower latency while adhering to guidelines.
+export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model,
@@ -17,7 +17,7 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
   return response.text;
 };
 
-// Use gemini-3-pro-preview for advanced reasoning and theological analysis.
+// Updated to gemini-3-flash-preview to resolve quota limitations.
 export const generateDeepDive = async (content: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Act as an expert theologian and historical researcher with a deep commitment to Biblical truth. 
@@ -35,7 +35,7 @@ export const generateDeepDive = async (content: string) => {
   CONSTRAINT: STRICTLY NO EM DASHES (—). Use a colon or hyphen instead. Ensure everything is Christ-centered and Biblically faithful.`;
   
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-3-flash-preview',
     contents: prompt
   });
   // Use .text property as per guidelines.
