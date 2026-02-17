@@ -5,6 +5,22 @@ import { Devotional, ActiveSeries, TacticalLens, SpiritualFocus } from './types'
 import { generateDevotionalText } from './services/geminiService';
 import DevotionalDisplay from './components/DevotionalDisplay';
 
+// Define the categorized pathways for UI rendering
+const pathways = [
+  TacticalLens.EXPLORER,
+  TacticalLens.STRATEGIST,
+  TacticalLens.ARCHITECT,
+  TacticalLens.HEALER,
+  TacticalLens.WILDERNESS,
+];
+
+// Define the categorized spiritual seasons for UI rendering
+const seasons = [
+  TacticalLens.MARRIAGE,
+  TacticalLens.WHOLEHEART,
+  TacticalLens.LENT,
+];
+
 const Tooltip: React.FC<{ text: string; children: React.ReactNode }> = ({ text, children }) => {
   const [show, setShow] = useState(false);
   const timer = useRef<number | null>(null);
@@ -42,6 +58,8 @@ const App: React.FC = () => {
   const [focus, setFocus] = useState<SpiritualFocus>('non-denominational');
   const [selectedLens, setSelectedLens] = useState<TacticalLens>(TacticalLens.EXPLORER);
   const [activeSeries, setActiveSeries] = useState<ActiveSeries | null>(null);
+  const [abandonConfirm, setAbandonConfirm] = useState(false);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('soul_piercer_history');
@@ -52,11 +70,14 @@ const App: React.FC = () => {
 
     const savedSeries = localStorage.getItem('soul_piercer_active_series');
     if (savedSeries) {
-      const parsed = JSON.parse(savedSeries);
-      setActiveSeries(parsed);
-      // Auto-set lens and focus to match the series when loading
-      setSelectedLens(parsed.lens);
-      setFocus(parsed.focus);
+      try {
+        const parsed = JSON.parse(savedSeries);
+        setActiveSeries(parsed);
+        setSelectedLens(parsed.lens);
+        setFocus(parsed.focus);
+      } catch (e) {
+        localStorage.removeItem('soul_piercer_active_series');
+      }
     }
   }, []);
 
@@ -68,111 +89,97 @@ const App: React.FC = () => {
     return null;
   }, [input]);
 
-  const getTheologyTooltip = (f: SpiritualFocus) => {
-    switch(f) {
-      case 'non-denominational': return "A Non-denominational, Christ-centered perspective.";
-      case 'catholic': return "Wisdom rooted in Catholic tradition and theology.";
-      case 'theosophist': return "Insights from Theosophical wisdom and universal truth.";
-      default: return "";
-    }
-  };
-
   const getSystemPrompt = (lens: TacticalLens, religiousContext: string, match: any, isSeries: boolean, dayNum: number, totalDays: number) => {
+    const baseConstraint = "STRICTLY PROHIBITED: Do not mention 'Lenses', 'Paths', 'Tactical Lenses', or internal metadata names in your output. Focus entirely on Scripture and the human soul.";
+
     if (lens === TacticalLens.LENT) {
       return `
         SYSTEM INSTRUCTION FOR LENT WALK THE COVENANT (40-DAY CATHOLIC SEASON):
-        1. THE PERSONA: Expert Catholic Liturgical Guide. Direct, deep, and soul-piercing.
-        2. MANDATORY STRUCTURE:
+        ACT AS: Expert Catholic Liturgical Guide. Direct, deep, and soul-piercing.
+        ${baseConstraint}
         
         ### Header
-        "Walk the Covenant: 40 Days of Lent" - Day ${dayNum}: [Day Title]
-        Scripture: [Reference] - [Short Paraphrase]
+        "Walk the Covenant" - Day ${dayNum}: [Liturgical Title]
+        Scripture: [Bible Verse Reference] - [Thematic Paraphrase]
         
         ### The Hook
         A sharp, evocative 1-2 sentence emotional opening.
-
         ### Part 1: The Story
-        MANDATORY WORD COUNT: 200-300 WORDS.
-        CONTENT: Provide a gritty, relatable, contemporary narrative that mirrors the spiritual tension of the day's liturgical theme. Focus on the raw human struggle with pride, distraction, or self-reliance.
-
+        CONTENT: 200-300 words. Gritty, relatable narrative.
         ### Part 2: The Reflection
-        MANDATORY WORD COUNT: 200-300 WORDS.
-        CONTENT: A deep Catholic theological and scriptural reflection based strictly on the day's scripture. Bridge the gap between the "Story" and eternal Truth.
-        Current Phase Focus: ${dayNum <= 7 ? 'Foundation and Surrender' : dayNum <= 21 ? 'Cleansing and Repentance' : dayNum <= 35 ? 'Mercy and Transformation' : 'Perseverance and Resurrection Preparation'}.
-
+        CONTENT: 200-300 words. Deep Catholic theological reflection.
         ### Part 3: The Exchange
-        Two deep, piercing Examen-style questions for the soul to wrestle with.
-
+        Two deep, piercing Examen-style questions.
         ### Part 4: The Cord
-        A powerful 3-sentence prayer or liturgical anchor to carry through the day.
-
-        3. CONSTRAINTS: NO EM-DASHES (—). Use colons or hyphens. High-end Catholic vocabulary.
+        A powerful 3-sentence prayer.
       `;
     }
-    
+
     if (lens === TacticalLens.MARRIAGE) {
       return `
-        SYSTEM INSTRUCTION FOR MARRIAGE PATH:
-        1. THE PERSONA: Expert Devotional Designer & Kingdom Strategist for Couples. 
-        2. STRUCTURE: 
+        SYSTEM INSTRUCTION FOR SACRED MARRIAGE MEDITATION:
+        ACT AS: Expert Devotional Designer for Couples.
+        FOCUS: Unity, covenantal love, and Christ as the center.
+        ${baseConstraint}
         ### Header: Title + Scripture.
-        ### The Hook: 1-2 sentence opener.
-        ### Part 1: The Insight: 200-300 words. 
-        ### Part 2: The Exchange: Two bold questions.
-        ### Part 3: The Cord: 3-sentence prayer.
+        ### The Word: [Bible Verse Reference]
+        ### The Shared Story: 200-300 words involving a couple's journey.
+        ### The Spiritual Union: 200-300 words of biblical wisdom for husband and wife.
+        ### The Mirror: Two questions for the couple.
+        ### The Cord: A 3-sentence closing prayer for the marriage.
       `;
     }
 
     if (lens === TacticalLens.WHOLEHEART) {
       return `
-        SYSTEM INSTRUCTION FOR WHOLEHEART PATH:
-        1. THE PERSONA: Mentor to the Dedicated.
-        2. STRUCTURE: 
+        SYSTEM INSTRUCTION FOR WHOLEHEARTED DEVOTION:
+        ACT AS: Mentor to the Dedicated Soul.
+        FOCUS: Single-minded pursuit of God and purpose.
+        ${baseConstraint}
         ### Header: Title + Scripture.
-        ### The Reality: 200 words raw validation.
-        ### The Reframing: 200 words theology on completeness.
-        ### The Mirror: Two sharp questions.
-        ### The Anchor: "I am" declaration.
+        ### The Word: [Bible Verse Reference]
+        ### The Narrative: 200-300 words on an undivided heart.
+        ### The Eternal Perspective: 200-300 words of theological grounding.
+        ### The Heart Mirror: Two piercing questions.
+        ### The Anchor: A bold 3-sentence prayer.
       `;
     }
-
-    const lensInfo = LENS_CONFIG[lens];
+    
     return `
       ACT AS: A soulful devotional writer and compassionate wisdom guide. 
       RELIGIOUS FOCUS: ${religiousContext}.
-      WISDOM PATH: ${lens} (${lensInfo.description})
-      ### The Word
-      ### First Light
-      ### The Story
-      ### The Reflection
-      ### Steps Forward
-      ### Wisdom Anchors
-      ### Heart Mirror
+      ${baseConstraint}
+      ### The Word: [Scripture Reference]
+      ### The Story: 200-300 words of a relatable human narrative.
+      ### The Reflection: 200-300 words of theological analysis.
+      ### Heart Mirror: Two sharp questions.
+      ### The Anchor: A 3-sentence closing prayer.
     `;
   };
 
   const handleGenerate = async (seriesContext?: ActiveSeries) => {
-    const targetInput = seriesContext ? seriesContext.topic : input;
-    const currentDay = seriesContext ? seriesContext.currentDay : 1;
-    const totalDays = seriesContext ? seriesContext.totalDays : (selectedLens === TacticalLens.LENT ? 40 : journeyDays);
     const activeLens = seriesContext ? seriesContext.lens : selectedLens;
     const activeFocus = seriesContext ? seriesContext.focus : focus;
+    const currentDay = seriesContext ? seriesContext.currentDay : 1;
+    const totalDays = seriesContext ? seriesContext.totalDays : (activeLens === TacticalLens.LENT ? 40 : journeyDays);
+    
+    let finalTopic = input.trim();
+    if (seriesContext) {
+      finalTopic = seriesContext.topic;
+    } else if (!finalTopic && activeLens === TacticalLens.LENT) {
+      finalTopic = "Walk the Covenant: 40 Days of Lent";
+    }
 
-    if (!targetInput.trim() && !seriesContext && activeLens !== TacticalLens.LENT) return;
+    if (!finalTopic && activeLens !== TacticalLens.LENT) return;
 
     setLoading(true);
     setError(null);
-    setStatusText("SYNCHRONIZING...");
+    setAbandonConfirm(false);
 
     try {
       const match = activeProfile;
       const isSeries = !!seriesContext || mode === 'journey' || activeLens === TacticalLens.LENT;
-
-      const religiousContext = activeFocus === 'non-denominational' 
-        ? 'Non-denominational Christian' 
-        : activeFocus;
-
-      const finalTopic = seriesContext ? seriesContext.topic : (activeLens === TacticalLens.LENT ? "Walk the Covenant: 40 Days of Lent" : input);
+      const religiousContext = activeFocus === 'non-denominational' ? 'Non-denominational Christian' : activeFocus;
 
       const prompt = `
         ${getSystemPrompt(activeLens, religiousContext, match, isSeries, currentDay, totalDays)}
@@ -187,7 +194,7 @@ const App: React.FC = () => {
         content: text || "Transmission failed.",
         timestamp: Date.now(),
         input: finalTopic,
-        lens: `${activeLens}: ${match ? match.profile.name : 'Broad Spectrum'}`,
+        lens: activeLens,
         seriesDay: isSeries ? currentDay : undefined,
         seriesTotal: isSeries ? totalDays : undefined
       };
@@ -197,13 +204,11 @@ const App: React.FC = () => {
       setHistory(newHistory);
       localStorage.setItem('soul_piercer_history', JSON.stringify(newHistory));
       
-      // Update or create active series
       if (isSeries) {
         if (!seriesContext) {
-          // Starting a new series
           const newSeries: ActiveSeries = {
             topic: finalTopic,
-            currentDay: 2, // Next day to generate
+            currentDay: 2,
             totalDays: totalDays,
             lens: activeLens,
             focus: activeFocus
@@ -211,13 +216,11 @@ const App: React.FC = () => {
           setActiveSeries(newSeries);
           localStorage.setItem('soul_piercer_active_series', JSON.stringify(newSeries));
         } else {
-          // Progressing existing series
-          if (seriesContext.currentDay < seriesContext.totalDays) {
-            const updatedSeries = { ...seriesContext, currentDay: seriesContext.currentDay + 1 };
+          if (currentDay < totalDays) {
+            const updatedSeries = { ...seriesContext, currentDay: currentDay + 1 };
             setActiveSeries(updatedSeries);
             localStorage.setItem('soul_piercer_active_series', JSON.stringify(updatedSeries));
           } else {
-            // Journey completed
             setActiveSeries(null);
             localStorage.removeItem('soul_piercer_active_series');
           }
@@ -226,6 +229,7 @@ const App: React.FC = () => {
 
       setMomentum(prev => prev + 1);
       setInput("");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       setError(err.message || "Connection lost.");
     } finally {
@@ -233,69 +237,58 @@ const App: React.FC = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-      e.preventDefault();
-      handleGenerate();
+  const performReset = () => {
+    localStorage.removeItem('soul_piercer_active_series');
+    setActiveSeries(null);
+    setDevotional(null);
+    setSelectedLens(TacticalLens.EXPLORER);
+    setFocus('non-denominational');
+    setMode('glimpse');
+    setInput("");
+    setError(null);
+    setAbandonConfirm(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAbandonRequest = () => {
+    if (abandonConfirm) {
+      performReset();
+    } else {
+      setAbandonConfirm(true);
+      setTimeout(() => setAbandonConfirm(false), 3000);
     }
   };
 
-  const startLentSeason = () => {
-    setSelectedLens(TacticalLens.LENT);
-    setFocus('catholic');
-    setMode('journey');
-    setJourneyDays(40);
-    handleGenerate();
+  const handleReturnToSanctuary = () => {
+    setDevotional(null);
+    setError(null);
+    setAbandonConfirm(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  const resetSeries = () => {
-    if (window.confirm("Are you sure you want to abandon your current journey and start over?")) {
-      setActiveSeries(null);
-      localStorage.removeItem('soul_piercer_active_series');
-    }
-  };
-
-  const pathways = [
-    TacticalLens.EXPLORER,
-    TacticalLens.STRATEGIST,
-    TacticalLens.ARCHITECT,
-    TacticalLens.HEALER,
-    TacticalLens.WILDERNESS
-  ];
-
-  const seasons = [
-    TacticalLens.MARRIAGE,
-    TacticalLens.WHOLEHEART,
-    TacticalLens.LENT
-  ];
 
   const renderPathButton = (l: TacticalLens) => {
     const IconComp = (Icons as any)[LENS_CONFIG[l].icon];
-    const isMarriage = l === TacticalLens.MARRIAGE;
-    const isWholeheart = l === TacticalLens.WHOLEHEART;
-    const isLent = l === TacticalLens.LENT;
-    const isActive = activeSeries?.lens === l;
+    const isActive = selectedLens === l || activeSeries?.lens === l;
     
-    let style = {};
-    if (isMarriage) style = { border: '1px solid rgba(212, 175, 55, 0.5)' };
-    if (isWholeheart) style = { border: '1px solid rgba(226, 232, 240, 0.6)' };
-    if (isLent) style = { border: '1px solid rgba(168, 85, 247, 0.4)' };
-
     return (
-      <Tooltip key={l} text={l === TacticalLens.LENT ? "Click to walk the 40 day Lent series" : LENS_CONFIG[l].description}>
+      <Tooltip key={l} text={LENS_CONFIG[l].description}>
         <button 
-          onClick={() => l === TacticalLens.LENT ? startLentSeason() : setSelectedLens(l)}
-          style={style}
-          className={`w-full flex flex-col items-center gap-4 p-6 rounded-[2rem] border transition-all relative overflow-hidden ${selectedLens === l ? 'bg-indigo-500 border-indigo-400 text-white shadow-2xl scale-105' : 'bg-white/5 border-white/5 text-slate-400 hover:text-slate-200'} ${isMarriage ? 'hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]' : ''} ${isWholeheart ? 'hover:shadow-[0_0_20px_rgba(226,232,240,0.2)]' : ''} ${isLent ? 'hover:shadow-[0_0_20px_rgba(168,85,247,0.2)]' : ''}`}
+          onClick={() => {
+            setSelectedLens(l);
+            if (l === TacticalLens.LENT) setFocus('catholic');
+            textAreaRef.current?.focus();
+            textAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }}
+          className={`w-full flex flex-col items-center gap-4 p-6 rounded-[2rem] border transition-all relative overflow-hidden ${isActive ? 'bg-indigo-500 border-indigo-400 text-white shadow-2xl scale-105' : 'bg-white/5 border-white/5 text-slate-400 hover:text-slate-200'}`}
         >
-          {isActive && (
+          {activeSeries?.lens === l && (
             <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40">
               <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></div>
               <span className="text-[8px] font-mono text-emerald-300 font-bold uppercase">ACTIVE</span>
             </div>
           )}
-          <IconComp className={`w-7 h-7 ${selectedLens === l ? 'text-white' : isMarriage ? 'text-amber-200/50' : isWholeheart ? 'text-slate-200/50' : isLent ? 'text-purple-300/50' : 'opacity-30'}`} />
-          <span className={`text-[11px] font-bold uppercase tracking-widest`}>{l === TacticalLens.LENT ? "Lent Series" : `${l} Path`}</span>
+          <IconComp className={`w-7 h-7 ${isActive ? 'text-white' : 'opacity-30'}`} />
+          <span className={`text-[11px] font-bold uppercase tracking-widest`}>{l === TacticalLens.LENT ? "Lent Series" : `${l} Meditation`}</span>
         </button>
       </Tooltip>
     );
@@ -303,26 +296,23 @@ const App: React.FC = () => {
 
   const renderActiveDashboard = () => {
     if (!activeSeries) return null;
-
     const isLent = activeSeries.lens === TacticalLens.LENT;
-    const progress = ((activeSeries.currentDay - 1) / activeSeries.totalDays) * 100;
-    const accentColor = isLent ? 'rgba(168, 85, 247, 0.6)' : 'rgba(129, 140, 248, 0.6)';
+    const progress = Math.max(0, Math.min(100, ((activeSeries.currentDay - 1) / activeSeries.totalDays) * 100));
     const IconComp = (Icons as any)[LENS_CONFIG[activeSeries.lens].icon];
 
     return (
       <div className="animate-slide-up mb-12">
         <div className="glass-panel p-10 rounded-[3.5rem] border border-white/10 relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-full h-1 opacity-20 bg-white/10">
-            <div className="h-full bg-indigo-400 transition-all duration-1000" style={{ width: `${progress}%`, boxShadow: `0 0 15px ${accentColor}` }}></div>
+            <div className="h-full bg-indigo-400 transition-all duration-1000" style={{ width: `${progress}%` }}></div>
           </div>
-          
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-8">
               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white border border-white/10 ${isLent ? 'bg-purple-500/20' : 'bg-indigo-500/20'}`}>
                 <IconComp className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-[0.5em] mb-2">Current Covenant</h3>
+                <h3 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-[0.5em] mb-2">Current Meditation</h3>
                 <div className="flex items-center gap-4">
                   <span className="text-2xl font-serif-display text-white italic">{activeSeries.topic}</span>
                   <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-mono text-indigo-300 uppercase tracking-widest font-bold">
@@ -331,20 +321,21 @@ const App: React.FC = () => {
                 </div>
               </div>
             </div>
-
             <div className="flex items-center gap-4">
-              <Tooltip text="Discard progress and reset series.">
-                <button onClick={resetSeries} className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-red-500/20 border border-white/5 text-slate-500 hover:text-red-400 transition-all">
-                  <Icons.Target className="w-5 h-5 opacity-50" />
-                </button>
-              </Tooltip>
+              <button 
+                onClick={handleAbandonRequest} 
+                className={`px-6 py-5 rounded-2xl transition-all font-mono text-[9px] font-black uppercase tracking-widest flex items-center gap-3 ${abandonConfirm ? 'bg-red-500 text-white scale-110 shadow-lg' : 'bg-red-500/5 hover:bg-red-500/20 border border-red-500/10 text-red-400/80 hover:text-red-400'}`}
+              >
+                <Icons.Target className="w-4 h-4" />
+                {abandonConfirm ? "CONFIRM ABANDON?" : "ABANDON JOURNEY"}
+              </button>
               <button 
                 onClick={() => handleGenerate(activeSeries)}
                 disabled={loading}
                 className="px-10 py-5 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white font-mono text-[11px] font-black uppercase tracking-[0.3em] shadow-xl transition-all flex items-center gap-4 group"
               >
-                {loading ? <Icons.Loader className="w-4 h-4" /> : <Icons.Play className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
-                {loading ? "BREATHING..." : "ENTER NEXT CHAPTER"}
+                {loading ? <Icons.Loader className="w-4 h-4" /> : <Icons.Play className="w-4 h-4" />}
+                {loading ? "SEEKING..." : "ENTER DAY " + activeSeries.currentDay}
               </button>
             </div>
           </div>
@@ -371,10 +362,13 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
-        
         <div className="flex gap-5 mt-8 md:mt-0">
-          <button onClick={() => setDevotional(null)} className="w-14 h-14 flex items-center justify-center rounded-3xl bg-white/5 hover:bg-white/10 text-slate-300 transition-all border border-white/10" title="History">
-            <Icons.History className="w-6 h-6" />
+          <button 
+            onClick={handleReturnToSanctuary} 
+            className="px-6 py-4 flex items-center gap-3 rounded-2xl bg-white/5 hover:bg-white/10 text-slate-300 transition-all border border-white/10 shadow-lg group" 
+          >
+            <Icons.Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Sanctuary Home</span>
           </button>
         </div>
       </header>
@@ -389,18 +383,15 @@ const App: React.FC = () => {
         {!devotional ? (
           <div className="space-y-12 animate-slide-up">
             {renderActiveDashboard()}
-
             <div className="flex flex-col gap-8">
                <div className="grid grid-cols-2 md:grid-cols-5 gap-5">
                  {pathways.map(renderPathButton)}
                </div>
-               
                <div className="flex items-center gap-6 my-4">
                   <div className="h-px flex-1 bg-white/10"></div>
-                  <span className="font-mono text-[10px] text-slate-500 tracking-[0.5em] uppercase font-black">Seasons</span>
+                  <span className="font-mono text-[10px] text-slate-500 tracking-[0.5em] uppercase font-black">Spiritual Seasons</span>
                   <div className="h-px flex-1 bg-white/10"></div>
                </div>
-
                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
                  {seasons.map(renderPathButton)}
                </div>
@@ -408,12 +399,8 @@ const App: React.FC = () => {
 
             <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
               <div className="flex gap-3 p-2 glass-panel rounded-3xl border border-white/10 items-center">
-                <Tooltip text="A single, immediate insight for the present moment.">
-                  <button onClick={() => setMode('glimpse')} className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'glimpse' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}>Glimpse</button>
-                </Tooltip>
-                <Tooltip text="Create a multi-day devotional path to walk through.">
-                  <button onClick={() => setMode('journey')} className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'journey' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}>Journey</button>
-                </Tooltip>
+                <button onClick={() => setMode('glimpse')} className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'glimpse' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}>Single Insight</button>
+                <button onClick={() => setMode('journey')} className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'journey' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}>Biblical Journey</button>
                 {mode === 'journey' && selectedLens !== TacticalLens.LENT && !activeSeries && (
                   <div className="flex items-center gap-3 px-6 border-l border-white/10">
                     <span className="font-mono text-[9px] text-slate-500 uppercase tracking-widest font-bold">Days:</span>
@@ -423,22 +410,32 @@ const App: React.FC = () => {
               </div>
                <div className="flex gap-2 p-2 glass-panel rounded-3xl border border-white/10">
                 {(['non-denominational', 'catholic', 'theosophist'] as SpiritualFocus[]).map(f => (
-                  <Tooltip key={f} text={getTheologyTooltip(f)}>
-                    <button key={f} onClick={() => setFocus(f as any)} className={`px-7 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${focus === f ? 'bg-slate-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}>
-                      {f === 'non-denominational' ? 'NON-DENOM' : f.toUpperCase()}
-                    </button>
-                  </Tooltip>
+                  <button key={f} onClick={() => setFocus(f as any)} className={`px-7 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${focus === f ? 'bg-slate-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}>
+                    {f === 'non-denominational' ? 'NON-DENOM' : f.toUpperCase()}
+                  </button>
                 ))}
               </div>
             </div>
 
             {!activeSeries && (
               <div className="relative animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder={selectedLens === TacticalLens.LENT ? "Focusing on Walk the Covenant: 40 Days of Lent..." : "Enter your focus..."} className="w-full glass-panel rounded-[3.5rem] p-12 md:p-20 text-3xl md:text-4xl font-serif-display italic text-white placeholder:text-slate-700 focus:outline-none min-h-[400px] resize-none transition-all leading-relaxed" />
+                <textarea 
+                  ref={textAreaRef}
+                  value={input} 
+                  onChange={(e) => setInput(e.target.value)} 
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleGenerate();
+                    }
+                  }}
+                  placeholder={selectedLens === TacticalLens.LENT ? "Focusing on Walk the Covenant: 40 Days of Lent..." : "Enter your prayer focus or meditation topic..."} 
+                  className="w-full glass-panel rounded-[3.5rem] p-12 md:p-20 text-3xl md:text-4xl font-serif-display italic text-white placeholder:text-slate-700 focus:outline-none min-h-[400px] resize-none transition-all leading-relaxed" 
+                />
                 <div className="absolute bottom-12 right-12 flex items-center gap-6">
                   <button onClick={() => handleGenerate()} disabled={loading || (!input.trim() && selectedLens !== TacticalLens.LENT)} className="px-16 py-6 rounded-3xl luminous-gradient text-white font-mono text-[12px] font-black uppercase tracking-[0.4em] shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-20 flex items-center gap-5">
                     {loading ? <Icons.Loader className="w-5 h-5" /> : <Icons.Send className="w-5 h-5" />}
-                    {loading ? "BREATHING..." : mode === 'journey' ? `START JOURNEY` : `EXPLORE GLIMPSE`}
+                    {loading ? "COMMUNING..." : "SEEK GUIDANCE"}
                   </button>
                 </div>
               </div>
@@ -447,10 +444,23 @@ const App: React.FC = () => {
         ) : (
           <div className="animate-slide-up pb-24">
             <div className="flex justify-between items-center mb-10 px-6">
-              <button onClick={() => setDevotional(null)} className="text-slate-400 hover:text-white font-mono text-[11px] uppercase tracking-widest flex items-center gap-4 transition-all">
-                <Icons.ChevronRight className="rotate-180 w-5 h-5" /> RETURN TO SANCTUARY
+              <button 
+                onClick={handleReturnToSanctuary} 
+                className="text-slate-400 hover:text-white font-mono text-[11px] uppercase tracking-widest flex items-center gap-4 transition-all group"
+              >
+                <Icons.ChevronRight className="rotate-180 w-5 h-5 group-hover:-translate-x-1 transition-transform" /> 
+                BACK TO SANCTUARY
               </button>
-              <div className="text-[11px] font-mono text-indigo-300 uppercase tracking-widest font-bold">{devotional.lens}</div>
+              
+              {activeSeries && (
+                <button 
+                  onClick={handleAbandonRequest} 
+                  className={`px-6 py-3 rounded-xl transition-all font-mono text-[9px] font-black uppercase tracking-widest flex items-center gap-3 ${abandonConfirm ? 'bg-red-500 text-white' : 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10'}`}
+                >
+                  <Icons.Target className="w-4 h-4" />
+                  {abandonConfirm ? "CONFIRM STOP SERIES?" : "STOP JOURNEY"}
+                </button>
+              )}
             </div>
             <DevotionalDisplay devotional={devotional} />
           </div>

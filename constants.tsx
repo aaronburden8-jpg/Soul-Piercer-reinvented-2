@@ -3,14 +3,14 @@ import React from 'react';
 import { Profile, TacticalLens } from './types';
 
 export const LENS_CONFIG: Record<TacticalLens, { description: string, icon: any }> = {
-  [TacticalLens.EXPLORER]: { description: "Discover broad perspectives and open new doors of thought.", icon: "Compass" },
-  [TacticalLens.STRATEGIST]: { description: "Receive a tactical plan to overcome obstacles.", icon: "Map" },
-  [TacticalLens.ARCHITECT]: { description: "Build new systems and structures for your life.", icon: "Layout" },
-  [TacticalLens.HEALER]: { description: "Find restoration, comfort, and emotional alignment.", icon: "ShieldAlert" },
-  [TacticalLens.WILDERNESS]: { description: "Surrender to the unexpected. Receive a unique, unpredictably generated perspective.", icon: "Wind" },
-  [TacticalLens.MARRIAGE]: { description: "Walk the covenant together. Shared wisdom for unity, love, and partnership.", icon: "Heart" },
-  [TacticalLens.WHOLEHEART]: { description: "Embrace your undivided season. Wisdom for purpose, completeness, and strength.", icon: "Target" },
-  [TacticalLens.LENT]: { description: "40 days of liturgical sharpening. Walk the covenant through prayer, fasting, and mercy.", icon: "Crosshair" }
+  [TacticalLens.EXPLORER]: { description: "Discover broad biblical horizons and open new doors of meditation.", icon: "Compass" },
+  [TacticalLens.STRATEGIST]: { description: "Receive a scriptural wisdom for overcoming obstacles.", icon: "Map" },
+  [TacticalLens.ARCHITECT]: { description: "Build your life on the solid foundation of Christ.", icon: "Layout" },
+  [TacticalLens.HEALER]: { description: "Find restoration, comfort, and emotional alignment in the Word.", icon: "ShieldAlert" },
+  [TacticalLens.WILDERNESS]: { description: "Surrender to the Spirit. Receive a unique, unpredictably generated meditation.", icon: "Wind" },
+  [TacticalLens.MARRIAGE]: { description: "Walk the covenant together. Shared wisdom for unity and love.", icon: "Heart" },
+  [TacticalLens.WHOLEHEART]: { description: "Embrace your undivided season. Wisdom for purpose and strength.", icon: "Target" },
+  [TacticalLens.LENT]: { description: "40 days of liturgical sharpening. Walk the covenant through prayer.", icon: "Crosshair" }
 };
 
 export const PROFILES: Record<string, Profile> = {
@@ -107,6 +107,7 @@ export const Icons = {
   Send: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
   Loader: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`animate-spin ${className || ''}`}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>,
   History: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>,
+  Home: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
   Dive: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>,
   Play: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 3 19 12 5 21 5 3"/></svg>,
   Heart: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
