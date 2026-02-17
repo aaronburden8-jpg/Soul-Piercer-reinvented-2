@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Icons, PROFILES, LENS_CONFIG } from './constants';
+import { Icons, LENS_CONFIG } from './constants';
 import { Devotional, ActiveSeries, TacticalLens, SpiritualFocus } from './types';
 import { generateDevotionalText } from './services/geminiService';
 import DevotionalDisplay from './components/DevotionalDisplay';
@@ -19,12 +19,12 @@ const seasons = [
   TacticalLens.LENT,
 ];
 
-const Tooltip: React.FC<{ text: string; children: React.ReactNode }> = ({ text, children }) => {
+const Tooltip: React.FC<{ text: string; children: React.ReactNode; duration?: number }> = ({ text, children, duration = 300 }) => {
   const [show, setShow] = useState(false);
   const timer = useRef<number | null>(null);
 
   const onEnter = () => {
-    timer.current = window.setTimeout(() => setShow(true), 300);
+    timer.current = window.setTimeout(() => setShow(true), duration);
   };
   const onLeave = () => {
     if (timer.current) clearTimeout(timer.current);
@@ -79,60 +79,61 @@ const App: React.FC = () => {
     }
   }, []);
 
-  const activeProfile = useMemo(() => {
-    const lower = input.toLowerCase();
-    for (const key in PROFILES) {
-      if (lower.includes(key)) return { key, profile: PROFILES[key] };
-    }
-    return null;
-  }, [input]);
+  const getSystemPrompt = (lens: TacticalLens, religiousContext: string, topic: string) => {
+    const baseConstraint = `
+      STRICTLY PROHIBITED: Do not mention internal metadata, 'lenses', or 'models'.
+      UNIVERSAL FORMATTING: 
+      - Use headers starting with ###. 
+      - Strictly avoid long em dashes (—). Use colons, semi-colons, or standard dashes (-).
+      - NO SIGNATURES: Do not include 'Blessings', 'Aaron', or any sign-off. End immediately after Key Thoughts.
+    `;
 
-  const getSystemPrompt = (lens: TacticalLens, religiousContext: string, match: any, isSeries: boolean, dayNum: number, totalDays: number) => {
-    const baseConstraint = "STRICTLY PROHIBITED: Do not mention 'Lenses', 'Paths', 'Tactical Lenses', or internal metadata names in your output. Focus entirely on Scripture.";
-
-    if (lens === TacticalLens.LENT) {
-      return `ACT AS: Expert Catholic Liturgical Guide. Direct and deep. ${baseConstraint}
-        ### Header
-        "Walk the Covenant" - Day ${dayNum}: [Liturgical Title]
-        Scripture: [Verse]
-        ### The Hook
-        One sharp sentence.
-        ### Part 1: The Story
-        200 words narrative.
-        ### Part 2: The Reflection
-        200 words theology.
-        ### Part 3: The Exchange
-        Two Examen questions.
-        ### Part 4: The Cord
-        3-sentence prayer.`;
-    }
+    const scripturePriorityLogic = `
+      SCRIPTURE ANCHORING:
+      - If the TOPIC includes a Biblical reference (e.g., 'Psalm 23', 'Revelation 2'), you MUST anchor the entire devotional to that text.
+      - THE WORD: Provide the Reference + a short 1-sentence paraphrase of a random verse from that chapter.
+      - INTEGRATION: THE STORY and BIBLICAL REFLECTION must specifically interpret and apply that provided scripture through the current Path/Mode.
+      - FALLBACK: If no scripture is provided, use an OT/NT pair relevant to the topic.
+    `;
+    
+    let personaPrompt = `ACT AS: A world-class spiritual guide and mentor. 
+      TONE: Soulful, direct, and deeply immersive.
+      RELIGIOUS FOCUS: ${religiousContext}.`;
 
     if (lens === TacticalLens.MARRIAGE) {
-      return `ACT AS: Devotional Designer for Couples. ${baseConstraint}
-        ### Header: Title + Scripture.
-        ### The Word: [Verse]
-        ### The Shared Story: 200 words.
-        ### The Spiritual Union: 200 words.
-        ### The Mirror: Two questions.
-        ### The Cord: 3-sentence prayer.`;
+      personaPrompt = `ACT AS: A wise marriage mentor.
+      TONE: Intimate, challenging, restorative.
+      RELIGIOUS FOCUS: ${religiousContext}.
+      SPECIFIC FOCUS: Couple-centric. Address them as a unit (Husband and Wife). Focus on covenant, communication, intimacy, and sacrifice. Designed for joint reading aloud.`;
+    } else if (lens === TacticalLens.WHOLEHEART) {
+      personaPrompt = `ACT AS: "Mentor to the Dedicated."
+      TONE: Empowering, mission-focused.
+      RELIGIOUS FOCUS: ${religiousContext}.
+      SPECIFIC FOCUS: Pivot from "waiting room" to "throne room" theology. Validate the completeness of the individual (100% whole right now). Focus on undivided Kingdom devotion.
+      SECTION REQUIREMENTS:
+      - PREAMBLE: 150 words on the weight of being undivided.
+      - THE WORD: Scriptures on identity and undivided heart.
+      - THE STORY: 200-300 words on solo agency/freedom. No clichés.
+      - BIBLICAL REFLECTION: 200-300 words on Christ-centered Completeness.
+      - THE EXCHANGE: 2 sharp mirror questions on Kingdom risk.
+      - THE PRAYER: 50-90 words of sufficiency.
+      - KEY THOUGHTS: 3 takeaways on mission.`;
     }
 
-    if (lens === TacticalLens.WHOLEHEART) {
-      return `ACT AS: Mentor for Wholeheartedness. ${baseConstraint}
-        ### Header: Title + Scripture.
-        ### The Word: [Verse]
-        ### The Narrative: 200 words.
-        ### The Eternal Perspective: 200 words.
-        ### The Heart Mirror: Two questions.
-        ### The Anchor: 3-sentence prayer.`;
-    }
-    
-    return `ACT AS: Soulful devotional guide. Focus: ${religiousContext}. ${baseConstraint}
-      ### The Word: [Verse]
-      ### The Story: 200 words.
-      ### The Reflection: 200 words.
-      ### Heart Mirror: Two questions.
-      ### The Anchor: 3-sentence prayer.`;
+    return `
+      ${personaPrompt}
+      ${baseConstraint}
+      ${scripturePriorityLogic}
+      
+      OUTPUT STRUCTURE (MANDATORY ORDER):
+      1. ### Preamble
+      2. ### The Word
+      3. ### The Story (200-300 words)
+      4. ### Biblical Reflection (200-300 words)
+      5. ### The Exchange
+      6. ### The Prayer
+      7. ### Key Thoughts
+    `;
   };
 
   const handleGenerate = async (seriesContext?: ActiveSeries) => {
@@ -155,18 +156,17 @@ const App: React.FC = () => {
     setAbandonConfirm(false);
 
     try {
-      const match = activeProfile;
       const isSeries = !!seriesContext || mode === 'journey' || activeLens === TacticalLens.LENT;
       const religiousContext = activeFocus === 'non-denominational' ? 'Non-denominational Christian' : activeFocus;
 
       const prompt = `
-        ${getSystemPrompt(activeLens, religiousContext, match, isSeries, currentDay, totalDays)}
+        ${getSystemPrompt(activeLens, religiousContext, finalTopic)}
         TOPIC: ${finalTopic}
+        ${isSeries ? `SESSION: Day ${currentDay} of ${totalDays} in this Journey.` : ""}
       `;
 
-      setStatusText(isSeries ? `PREPARING DAY ${currentDay} CHAPTER...` : "SEEKING...");
-      // Forcing the use of the Lite model to ensure high quota availability
-      const text = await generateDevotionalText(prompt, 'gemini-flash-lite-latest');
+      setStatusText(isSeries ? `PREPARING DAY ${currentDay} CHAPTER...` : "COMMUNING...");
+      const text = await generateDevotionalText(prompt, 'gemini-3-flash-preview');
       
       const newDevo: Devotional = {
         id: `v4_${Date.now()}`,
@@ -210,9 +210,8 @@ const App: React.FC = () => {
       setInput("");
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
-      // Better error parsing for Gemini API issues
       let msg = err.message || "An unknown error occurred.";
-      if (msg.includes('429')) msg = "Quota limit reached. Switched to Lite model for higher limits, but it seems you've exhausted your free tier. Please wait a few moments.";
+      if (msg.includes('429')) msg = "Quota limit reached. Please wait a moment for the sanctuary to reset.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -270,7 +269,7 @@ const App: React.FC = () => {
             </div>
           )}
           <IconComp className={`w-7 h-7 ${isActive ? 'text-white' : 'opacity-30'}`} />
-          <span className={`text-[11px] font-bold uppercase tracking-widest`}>{l === TacticalLens.LENT ? "Lent Series" : `${l} Meditation`}</span>
+          <span className={`text-[11px] font-bold uppercase tracking-widest text-center`}>{l === TacticalLens.LENT ? "Lent Series" : `${l} Meditation`}</span>
         </button>
       </Tooltip>
     );
@@ -316,7 +315,7 @@ const App: React.FC = () => {
                 className="px-10 py-5 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white font-mono text-[11px] font-black uppercase tracking-[0.3em] shadow-xl transition-all flex items-center gap-4 group disabled:opacity-50"
               >
                 {loading ? <Icons.Loader className="w-4 h-4" /> : <Icons.Play className="w-4 h-4" />}
-                {loading ? "SEEKING..." : `START DAY ${activeSeries.currentDay}`}
+                {loading ? "COMMUNING..." : `START DAY ${activeSeries.currentDay}`}
               </button>
             </div>
           </div>
@@ -333,7 +332,7 @@ const App: React.FC = () => {
             <Icons.Crosshair className="w-10 h-10" />
           </div>
           <div>
-            <h1 className="text-3xl font-black uppercase tracking-tighter text-gradient font-serif-display leading-none">The Soul Piercer <span className="text-[14px] font-mono not-italic text-indigo-300 opacity-60 ml-2">v4.3 Sanctuary</span></h1>
+            <h1 className="text-3xl font-black uppercase tracking-tighter text-gradient font-serif-display leading-none">The Soul Piercer <span className="text-[14px] font-mono not-italic text-indigo-300 opacity-60 ml-2">v4.6 Sanctuary</span></h1>
             <div className="flex items-center gap-5 mt-3">
               <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-[0.3em] flex items-center gap-3">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div> CONNECTED_LITE
@@ -358,7 +357,7 @@ const App: React.FC = () => {
         {error && (
           <div className="mb-10 bg-red-500/10 border border-red-500/20 p-8 rounded-3xl text-red-200 font-mono text-[12px] flex flex-col items-center gap-4 text-center uppercase tracking-[0.1em]">
             <div className="flex items-center gap-3 text-red-400 font-bold">
-              <Icons.ShieldAlert className="w-5 h-5" /> [TRANSMISSION_ERROR]
+              <Icons.ShieldCheck className="w-5 h-5" /> [TRANSMISSION_NOTICE]
             </div>
             <p className="max-w-2xl opacity-80">{error}</p>
             <button onClick={performReset} className="mt-4 px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white text-[10px] font-bold tracking-widest">
@@ -416,7 +415,7 @@ const App: React.FC = () => {
                       handleGenerate();
                     }
                   }}
-                  placeholder={selectedLens === TacticalLens.LENT ? "Awaiting Walk the Covenant: 40 Days of Lent..." : "Enter your prayer focus or topic..."} 
+                  placeholder={selectedLens === TacticalLens.LENT ? "Awaiting Walk the Covenant: 40 Days of Lent..." : "Enter your prayer focus or topic (e.g., 'Psalm 23' or 'Identity')..."} 
                   className="w-full glass-panel rounded-[3.5rem] p-12 md:p-20 text-3xl md:text-4xl font-serif-display italic text-white placeholder:text-slate-700 focus:outline-none min-h-[400px] resize-none transition-all leading-relaxed" 
                 />
                 <div className="absolute bottom-12 right-12 flex items-center gap-6">

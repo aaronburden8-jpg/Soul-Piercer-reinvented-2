@@ -12,18 +12,6 @@ export enum TacticalLens {
 
 export type SpiritualFocus = 'non-denominational' | 'catholic' | 'theosophist';
 
-export interface Profile {
-  name: string;
-  role: string;
-  tone: string;
-  signature: string;
-  scriptures?: string[];
-  themes?: string[];
-  structure: string;
-  special_instructions?: string;
-  audience_type: 'adult' | 'teen' | 'spouse';
-}
-
 export interface DevotionalSection {
   title: string;
   content: string;

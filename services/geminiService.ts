@@ -1,8 +1,8 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// Using gemini-flash-lite-latest to avoid 429 quota limits while maintaining high speed.
-export const generateDevotionalText = async (prompt: string, model: string = 'gemini-flash-lite-latest') => {
+// Using gemini-3-flash-preview for Basic Text Tasks like devotional generation to ensure high quality and speed.
+export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model,
@@ -16,7 +16,7 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
   return response.text;
 };
 
-// Deep dives also moved to lite model for stability.
+// Deep dives upgraded to gemini-3-pro-preview for complex reasoning and advanced historical/theological research.
 export const generateDeepDive = async (content: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Act as an expert theologian and historical researcher. 
@@ -33,12 +33,13 @@ export const generateDeepDive = async (content: string) => {
   Format: Clear headers, bullet points. No em-dashes.`;
   
   const response = await ai.models.generateContent({
-    model: 'gemini-flash-lite-latest',
+    model: 'gemini-3-pro-preview',
     contents: prompt
   });
   return response.text;
 };
 
+// Generates audio using the specialized gemini-2.5-flash-preview-tts model for high-quality speech.
 export const generateAudio = async (text: string) => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -63,6 +64,7 @@ export const generateAudio = async (text: string) => {
   }
 };
 
+// Decodes a base64 string into a Uint8Array.
 export const decodeBase64Audio = (base64: string) => {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -73,6 +75,7 @@ export const decodeBase64Audio = (base64: string) => {
   return bytes;
 };
 
+// Decodes raw PCM audio data into an AudioBuffer.
 export const decodeAudioData = async (
   data: Uint8Array,
   ctx: AudioContext,
@@ -92,6 +95,7 @@ export const decodeAudioData = async (
   return buffer;
 };
 
+// Helper function to play an audio buffer through the destination.
 export const playAudioBuffer = async (data: Uint8Array, audioCtx: AudioContext) => {
   const buffer = await decodeAudioData(data, audioCtx, 24000, 1);
   const source = audioCtx.createBufferSource();

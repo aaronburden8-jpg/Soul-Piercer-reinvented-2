@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Profile, TacticalLens } from './types';
+import { TacticalLens } from './types';
 
 export const LENS_CONFIG: Record<TacticalLens, { description: string, icon: any }> = {
   [TacticalLens.EXPLORER]: { description: "Discover broad biblical horizons and open new doors of meditation.", icon: "Compass" },
@@ -11,91 +11,6 @@ export const LENS_CONFIG: Record<TacticalLens, { description: string, icon: any 
   [TacticalLens.MARRIAGE]: { description: "Walk the covenant together. Shared wisdom for unity and love.", icon: "Heart" },
   [TacticalLens.WHOLEHEART]: { description: "Embrace your undivided season. Wisdom for purpose and strength.", icon: "Target" },
   [TacticalLens.LENT]: { description: "40 days of liturgical sharpening. Walk the covenant through prayer.", icon: "Crosshair" }
-};
-
-export const PROFILES: Record<string, Profile> = {
-  "sarah": {
-    name: "Sarah",
-    role: "Wife",
-    tone: "Gentle, intimate, emotionally safe. Focus on connection and reassurance.",
-    signature: "Love, Aaron",
-    structure: "Personal Note Included",
-    audience_type: 'spouse'
-  },
-  "jessica leigh": {
-    name: "Jessica Leigh",
-    role: "My Love",
-    tone: "Romantic, passionate, deeply immersive storytelling.",
-    signature: "Love, Aaron",
-    structure: "Personal Note Included",
-    audience_type: 'spouse',
-    special_instructions: "Write extremely long, romantic cinematic date narratives (2000+ words)."
-  },
-  "adrienne": {
-    name: "Adrienne",
-    role: "Close Friend",
-    tone: "Spiritually respectful, deep wisdom, bridges biblical truth with universal metaphors.",
-    signature: "Love, Aaron",
-    structure: "Personal Note Included",
-    audience_type: 'adult'
-  },
-  "don thomas": {
-    name: "Don Thomas",
-    role: "Respected Friend and Colleague",
-    tone: "Respectful, empowering, wise. A peer-to-peer connection that honors his work and character.",
-    signature: "Your friend, Aaron",
-    structure: "Personal Note Included",
-    audience_type: 'adult',
-    special_instructions: "Address him with high respect as a valued partner in mission. Focus on legacy, integrity, and spiritual sharpening."
-  },
-  "caleb": {
-    name: "Caleb",
-    role: "Son",
-    tone: "Direct, visual, bold truth. Man-to-man but fatherly warmth.",
-    signature: "Love, Dad",
-    structure: "Personal Note Included",
-    audience_type: 'teen'
-  },
-  "felicity": {
-    name: "Felicity",
-    role: "Teen",
-    tone: "Simplified, highly visual, bold Truth. Focus on identity and courage.",
-    signature: "Love, Dad",
-    structure: "Personal Note Included",
-    audience_type: 'teen'
-  },
-  "amberlynn": {
-    name: "Amberlynn",
-    role: "Daughter",
-    tone: "Encouraging, protective, focusing on her unique identity and strength in God.",
-    signature: "Love, Dad",
-    structure: "Personal Note Included",
-    audience_type: 'teen'
-  },
-  "jonah": {
-    name: "Jonah",
-    role: "Son",
-    tone: "Challenging, brotherhood, fatherly guidance. Focus on courage.",
-    signature: "Love, Dad",
-    structure: "Personal Note Included",
-    audience_type: 'teen'
-  },
-  "adam": {
-    name: "Adam",
-    role: "Son",
-    tone: "Solid, direct, grounded in character and legacy.",
-    signature: "Love, Dad",
-    structure: "Personal Note Included",
-    audience_type: 'teen'
-  },
-  "luke": {
-    name: "Luke",
-    role: "Son",
-    tone: "Insightful, steady, emphasizing wisdom and discipline.",
-    signature: "Love, Dad",
-    structure: "Personal Note Included",
-    audience_type: 'teen'
-  }
 };
 
 interface IconProps {
@@ -119,4 +34,5 @@ export const Icons = {
   ShieldAlert: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
   Calendar: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
   Wind: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>,
+  ShieldCheck: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>,
 };
