@@ -62,6 +62,112 @@ const App: React.FC = () => {
     return null;
   }, [input]);
 
+  const getSystemPrompt = (lens: TacticalLens, religiousContext: string, match: any, isSeries: boolean, dayNum: number, totalDays: number) => {
+    if (lens === TacticalLens.MARRIAGE) {
+      return `
+        SYSTEM INSTRUCTION FOR MARRIAGE PATH:
+
+        1. THE PERSONA:
+        You are a Kingdom Devotional Designer, an expert in spiritual intimacy and marital unity. Your goal is to capture immediate buy-in from both partners, even those spiritually reluctant. Craft content that is raw, authentic, and Christ-centered.
+
+        2. THE KINGDOM FILTER:
+        Every response must point to Jesus as the source and solution. No vague moralism. Reflect Yahweh's covenant character: sacrificial, persistent, and transformative.
+
+        3. THE ENGAGEMENT STRATEGY:
+        NLP Anchoring: Use emotionally provocative openers.
+        Active Voice: Short, punchy sentences.
+        No Fluff: Zero clichés. 
+
+        4. THE REQUIRED OUTPUT STRUCTURE (MARRIAGE LITURGY):
+        Strictly follow this structure:
+
+        ### Header
+        A Creative Title + 1 Primary Scripture (OT or NT).
+
+        ### The Hook
+        A 1-2 sentence emotional opener that previews the tension or conflict.
+
+        ${match ? `### Personal Briefing
+        (A deep, warm note for ${match.profile.name}. LENGTH: Minimum 150 words. End ONLY with "${match.profile.signature}")` : ''}
+
+        ### Part 1: The Story
+        A relatable, cinematic, metaphor-driven story that mirrors real-life marital or relational tensions. 
+        LENGTH: Strictly 200 to 300 words.
+
+        ### Part 2: Biblical Insight
+        A deep, theological exploration of the topic specifically for a couple. Connect the reality of the story to the character of Christ and the covenant of marriage.
+        LENGTH: Strictly 200 to 300 words.
+
+        ### Part 3: The Exchange
+        Two deep, bold, soul-piercing questions for the couple to ask each other right now to foster vulnerability.
+
+        ### Part 4: Key Thoughts
+        3-4 punchy, memorable "Wisdom Anchors" for the couple to hold onto throughout the day.
+
+        ### Part 5: The Cord
+        A unified, 3-sentence prayer or affirmation for the couple to say together aloud.
+
+        CONSTRAINTS: 
+        1. STRICTLY NO EM DASHES (—).
+        2. NO REPETITION across the ${totalDays}-day Journey arc.
+        3. Maintain the "Kingdom Devotional Designer" persona.
+      `;
+    }
+
+    const lensInfo = LENS_CONFIG[lens];
+    return `
+      ACT AS: A soulful devotional writer and compassionate wisdom guide. 
+      GOAL: Awaken spiritual hunger and provide deep, grounded hope. 
+      TONE: Luminous, warm, expansive, and deeply personal. 
+      RELIGIOUS FOCUS: ${religiousContext}. Every section must be rooted in Biblical truth.
+      WISDOM PATH: ${lens} (${lensInfo.description})
+      
+      ${isSeries ? `JOURNEY STATUS: Day ${dayNum} of ${totalDays}. 
+      This is a PROGRESSIVE NARRATIVE ARC spanning ${totalDays} days. 
+      MANDATORY: Do not repeat previous day narrative beats. Advance the story chapter-by-chapter. Build to a sophisticated climax.` : 'GLIMPSE STATUS: A single moment of clarity.'}
+      
+      ${match ? `
+      GUIDE INTEL: 
+      Profile: ${match.profile.name}
+      Relationship: ${match.profile.role}
+      Tone: ${match.profile.tone}
+      Special Instructions: ${match.profile.special_instructions || 'None'}
+      ` : 'GUIDE INTEL: Broad spectrum encouragement for a seeking heart.'}
+
+      FLOW OF CONTENT (STRICT ORDER):
+      
+      ### The Word
+      (Provide 1-2 expansive scriptures. Full text + reference.)
+
+      ### First Light
+      (A 1-line opening of clarity or gentle tension.)
+
+      ${match ? `### Personal Briefing
+      (A deep, warm, and highly personalized note for ${match.profile.name}. 
+      LENGTH: Minimum 150 words. 
+      MANDATORY CLOSING: End this section ONLY with "${match.profile.signature}")` : ''}
+
+      ### The Story
+      (An immersive cinematic metaphor. LENGTH: 200-300 words.)
+
+      ### The Reflection
+      (A deep theological and heart-centered exploration. LENGTH: 200-300 words.)
+
+      ### Steps Forward
+      (2 gentle, practical action steps.)
+
+      ### Wisdom Anchors
+      (2 memorable takeaways.)
+
+      ### Heart Mirror
+      (3 reflective diagnostic questions.)
+
+      CONSTRAINTS: 
+      1. STRICTLY NO EM DASHES (—).
+      2. ALL PERSONAL NOTES must be at least 150 words of deep substance.
+    `;
+  };
+
   const handleGenerate = async (seriesContext?: ActiveSeries) => {
     const targetInput = seriesContext ? seriesContext.topic : input;
     if (!targetInput.trim() || loading) return;
@@ -72,7 +178,6 @@ const App: React.FC = () => {
 
     try {
       const match = activeProfile;
-      const lensInfo = LENS_CONFIG[selectedLens];
       const dayNum = seriesContext ? seriesContext.currentDay : 1;
       const isSeries = !!seriesContext || mode === 'journey';
       const totalDays = seriesContext ? seriesContext.totalDays : journeyDays;
@@ -82,68 +187,8 @@ const App: React.FC = () => {
         : focus;
 
       const prompt = `
-        ACT AS: A soulful devotional writer and compassionate wisdom guide. 
-        GOAL: Awaken spiritual hunger and provide deep, grounded hope. 
-        TONE: Luminous, warm, expansive, and deeply personal. 
-        RELIGIOUS FOCUS: ${religiousContext}. Every section must be rooted in Biblical truth.
-        WISDOM PATH: ${selectedLens} (${lensInfo.description})
-        
-        ${isSeries ? `JOURNEY STATUS: Day ${dayNum} of ${totalDays}. 
-        This is a PROGRESSIVE NARRATIVE ARC spanning ${totalDays} days. 
-        - Early Phase (approx. first 25% of days): Establishing the spiritual tension and the foundation of the path.
-        - Middle Phase (approx. middle 50% of days): Deepening complexity, trials of the heart, persistent growth, and the "messy middle."
-        - Final Phase (approx. final 25% of days): The synthesis of wisdom and the ultimate complex realization of the topic.
-        MANDATORY: Do not repeat previous day narrative beats. Advance the story chapter-by-chapter. Build to a sophisticated climax.` : 'GLIMPSE STATUS: A single moment of clarity.'}
-        
+        ${getSystemPrompt(selectedLens, religiousContext, match, isSeries, dayNum, totalDays)}
         TOPIC: ${targetInput}
-        
-        ${match ? `
-        GUIDE INTEL: 
-        Profile: ${match.profile.name}
-        Relationship: ${match.profile.role}
-        Tone: ${match.profile.tone}
-        Special Instructions: ${match.profile.special_instructions || 'None'}
-        ` : 'GUIDE INTEL: Broad spectrum encouragement for a seeking heart.'}
-
-        FLOW OF CONTENT (STRICT ORDER):
-        
-        ### The Word
-        (Provide 1-2 expansive scriptures. Full text + reference.)
-
-        ### First Light
-        (A 1-line opening of clarity or gentle tension.)
-
-        ${match ? `### Personal Briefing
-        (A deep, warm, and highly personalized note for ${match.profile.name}. 
-        LENGTH: Minimum 150 words. 
-        CONTENT: Explore the heart-connection, specific life-context, and spiritual encouragement tailored to ${match.profile.name}. Do not be generic. 
-        MANDATORY CLOSING: End this section ONLY with "${match.profile.signature}")` : ''}
-
-        ### The Story
-        (An immersive cinematic metaphor. Gritty, sensory, and beautiful. 
-        LENGTH: Strictly between 200 and 300 words. 
-        JOURNEY NOTE: This must feel like a specific "chapter" of a larger ${totalDays}-day story. Avoid summary; move into new territory.)
-
-        ### The Reflection
-        (A deep theological and heart-centered exploration. 
-        MANDATORY: You MUST explicitly connect the topic to the character of God, the grace of Jesus, and Biblical principles. 
-        LENGTH: Strictly between 200 and 300 words. 
-        CONTENT: Do not repeat the story. Provide new theological insight building toward a complex conceptual realization.)
-
-        ### Steps Forward
-        (2 gentle, practical action steps.)
-
-        ### Wisdom Anchors
-        (2 memorable takeaways.)
-
-        ### Heart Mirror
-        (3 reflective diagnostic questions.)
-
-        CONSTRAINTS: 
-        1. STRICTLY NO EM DASHES (—). Use a comma, colon, or a single short hyphen (-) instead.
-        2. NO REPETITION across the ${totalDays}-day Journey arc.
-        3. ALL PERSONAL NOTES must be at least 150 words of deep substance.
-        4. Reflection MUST be Christian-Biblical for non-denominational focus.
       `;
 
       setStatusText(isSeries ? `PREPARING DAY ${dayNum} CHAPTER...` : "SEEKING WISDOM...");
@@ -218,7 +263,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-8 md:pt-16 max-w-5xl mx-auto">
+    <div className="min-h-screen pb-24 px-4 pt-8 md:pt-16 max-w-6xl mx-auto">
       <header className="flex flex-col md:flex-row items-center justify-between mb-12 glass-panel p-10 rounded-[3rem] border border-white/10 relative overflow-hidden group shadow-[0_0_80px_rgba(129,140,248,0.1)]">
         <div className="flex items-center gap-8">
           <div className="w-20 h-20 luminous-gradient rounded-[2rem] flex items-center justify-center text-white aura-glow">
@@ -272,18 +317,20 @@ const App: React.FC = () => {
 
         {!devotional ? (
           <div className="space-y-8 animate-slide-up">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
               {(Object.keys(TacticalLens) as Array<keyof typeof TacticalLens>).map((key) => {
                 const l = TacticalLens[key];
                 const IconComp = (Icons as any)[LENS_CONFIG[l].icon];
+                const isMarriage = l === TacticalLens.MARRIAGE;
                 return (
                   <Tooltip key={l} text={LENS_CONFIG[l].description}>
                     <button 
                       onClick={() => setSelectedLens(l)}
-                      className={`w-full flex flex-col items-center gap-4 p-6 rounded-[2rem] border transition-all ${selectedLens === l ? 'bg-indigo-500 border-indigo-400 text-white shadow-2xl scale-105' : 'bg-white/5 border-white/5 text-slate-400 hover:text-slate-200'}`}
+                      style={isMarriage ? { border: '1px solid rgba(212, 175, 55, 0.5)' } : {}}
+                      className={`w-full flex flex-col items-center gap-4 p-6 rounded-[2rem] border transition-all ${selectedLens === l ? 'bg-indigo-500 border-indigo-400 text-white shadow-2xl scale-105' : 'bg-white/5 border-white/5 text-slate-400 hover:text-slate-200'} ${isMarriage ? 'hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]' : ''}`}
                     >
-                      <IconComp className={`w-7 h-7 ${selectedLens === l ? 'text-white' : 'opacity-30'}`} />
-                      <span className="text-[11px] font-bold uppercase tracking-widest">{l} Path</span>
+                      <IconComp className={`w-7 h-7 ${selectedLens === l ? 'text-white' : isMarriage ? 'text-amber-200/50' : 'opacity-30'}`} />
+                      <span className={`text-[11px] font-bold uppercase tracking-widest ${isMarriage && selectedLens !== l ? 'text-amber-100/70' : ''}`}>{l} Path</span>
                     </button>
                   </Tooltip>
                 );

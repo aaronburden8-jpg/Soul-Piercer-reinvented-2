@@ -7,7 +7,8 @@ export const LENS_CONFIG: Record<TacticalLens, { description: string, icon: any 
   [TacticalLens.STRATEGIST]: { description: "Receive a tactical plan to overcome obstacles.", icon: "Map" },
   [TacticalLens.ARCHITECT]: { description: "Build new systems and structures for your life.", icon: "Layout" },
   [TacticalLens.HEALER]: { description: "Find restoration, comfort, and emotional alignment.", icon: "ShieldAlert" },
-  [TacticalLens.WILDERNESS]: { description: "Surrender to the unexpected. Receive a unique, unpredictably generated perspective.", icon: "Wind" }
+  [TacticalLens.WILDERNESS]: { description: "Surrender to the unexpected. Receive a unique, unpredictably generated perspective.", icon: "Wind" },
+  [TacticalLens.MARRIAGE]: { description: "Walk the covenant together. Shared wisdom for unity, love, and partnership.", icon: "Heart" }
 };
 
 export const PROFILES: Record<string, Profile> = {

@@ -47,16 +47,13 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   const processLineText = (text: string) => {
     if (!text) return "";
     
-    // Sanitize em dashes and double hyphens just in case the model produces them
     const sanitized = text.replace(/—/g, ' - ').replace(/--/g, ' - ');
     
-    // Match bold text **text**
     const parts = sanitized.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return <strong key={i} className="text-white font-bold">{part.slice(2, -2)}</strong>;
       }
-      // Simple italics *text*
       const italicParts = part.split(/(\*.*?\*)/g);
       return italicParts.map((ip, j) => {
         if (ip.startsWith('*') && ip.endsWith('*')) {
@@ -73,10 +70,10 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       if (!t) return <div key={i} className="h-6"></div>;
       
       if (t.startsWith('### ')) {
-        return <h5 key={i} className="text-indigo-300 font-mono text-sm tracking-[0.4em] uppercase mt-12 mb-6 border-b border-indigo-500/10 pb-3">{processLineText(t.replace('### ', ''))}</h5>;
+        return <h5 key={i} className="text-indigo-300 font-mono text-xl tracking-[0.4em] uppercase mt-16 mb-8 border-b border-indigo-500/10 pb-4">{processLineText(t.replace('### ', ''))}</h5>;
       }
       if (t.startsWith('#### ')) {
-        return <h6 key={i} className="text-slate-200 font-bold text-xl mt-8 mb-4">{processLineText(t.replace('#### ', ''))}</h6>;
+        return <h6 key={i} className="text-slate-200 font-bold text-2xl mt-10 mb-6">{processLineText(t.replace('#### ', ''))}</h6>;
       }
 
       if (t.startsWith('>')) {
@@ -89,8 +86,8 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       
       if (t.startsWith('- ') || t.startsWith('* ')) {
         return (
-          <div key={i} className="flex gap-6 my-5 items-start pl-4">
-            <div className="mt-3 w-2.5 h-2.5 rounded-full bg-indigo-300 shrink-0 aura-glow"></div>
+          <div key={i} className="flex gap-6 my-6 items-start pl-4">
+            <div className="mt-3.5 w-2.5 h-2.5 rounded-full bg-indigo-300 shrink-0 aura-glow"></div>
             <p className="text-slate-100 text-xl leading-relaxed">{processLineText(t.substring(2))}</p>
           </div>
         );
@@ -105,10 +102,25 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
     const delay = `${index * 0.1}s`;
 
     switch (title) {
+      case 'Header':
+        return (
+          <div key={title} className="mb-20 animate-slide-up text-center border-b-2 border-amber-500/20 pb-16" style={{ animationDelay: delay }}>
+             <h4 className="text-amber-300 font-mono text-[12px] tracking-[0.8em] uppercase mb-10 flex justify-center items-center gap-6">
+               <span className="w-16 h-px bg-amber-400/20"></span> COVENANT_PROTOCOL
+            </h4>
+            <div className="font-serif-display text-5xl md:text-6xl text-white italic leading-tight mb-8">
+               {renderContent(content.split('\n')[0], true)}
+            </div>
+            <div className="text-amber-100/70 font-mono text-lg italic uppercase tracking-widest">
+               {content.split('\n').slice(1).join('\n')}
+            </div>
+          </div>
+        );
+
       case 'The Word':
         return (
           <div key={title} className="mb-20 animate-slide-up" style={{ animationDelay: delay }}>
-             <h4 className="text-emerald-300 font-mono text-[11px] tracking-[0.6em] uppercase mb-10 flex items-center gap-6">
+             <h4 className="text-emerald-300 font-mono text-sm tracking-[0.6em] uppercase mb-10 flex items-center gap-6">
                <span className="w-16 h-px bg-emerald-400/20"></span> Eternal Anchor
             </h4>
             <div className="bg-emerald-500/10 border border-emerald-400/20 p-12 rounded-[3.5rem] italic font-serif-display text-4xl text-emerald-50 leading-relaxed shadow-2xl">
@@ -117,10 +129,11 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           </div>
         );
 
+      case 'The Hook':
       case 'First Light':
         return (
           <div key={title} className="mb-16 animate-slide-up text-center border-b border-white/10 pb-12" style={{ animationDelay: delay }}>
-            <div className="text-indigo-300 font-mono text-[13px] tracking-[0.5em] uppercase mb-8">A MOMENT OF CLARITY</div>
+            <div className="text-indigo-300 font-mono text-sm tracking-[0.5em] uppercase mb-8">{title === 'The Hook' ? 'THE HEART TENSION' : 'A MOMENT OF CLARITY'}</div>
             <div className="text-4xl md:text-5xl font-serif-display italic text-white max-w-4xl mx-auto leading-tight drop-shadow-lg">
               {content}
             </div>
@@ -142,7 +155,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
                 {isPlaying ? <Icons.Loader className="w-7 h-7" /> : <Icons.Play className="w-7 h-7" />}
               </button>
             </div>
-            <h3 className="text-indigo-200 font-mono text-[12px] tracking-[0.5em] uppercase mb-12 flex items-center gap-5">
+            <h3 className="text-indigo-200 font-mono text-sm tracking-[0.5em] uppercase mb-12 flex items-center gap-5">
               <Icons.Heart className="w-6 h-6" /> HEART TO HEART
             </h3>
             <div className="font-serif-display text-4xl italic text-white leading-snug pr-32">
@@ -151,11 +164,12 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           </div>
         );
 
+      case 'Part 1: The Story':
       case 'The Story':
         return (
           <div key={title} className="mb-24 animate-slide-up" style={{ animationDelay: delay }}>
-            <h4 className="text-slate-300 font-mono text-[11px] tracking-[0.7em] uppercase mb-12 flex items-center gap-6">
-               <span className="w-20 h-px bg-slate-700"></span> THE UNFOLDING STORY
+            <h4 className="text-slate-300 font-mono text-sm tracking-[0.7em] uppercase mb-12 flex items-center gap-6">
+               <span className="w-20 h-px bg-slate-700"></span> {title === 'Part 1: The Story' ? 'CHAPTER 1: THE REALITY' : 'THE UNFOLDING STORY'}
             </h4>
             <div className="text-slate-50 bg-white/[0.04] p-12 md:p-20 rounded-[4.5rem] border border-white/10 shadow-2xl">
                {renderContent(content)}
@@ -163,25 +177,45 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           </div>
         );
 
+      case 'Part 2: Biblical Insight':
       case 'The Reflection':
         return (
           <div key={title} className="mb-24 animate-slide-up" style={{ animationDelay: delay }}>
-            <h4 className="text-indigo-300 font-mono text-[11px] tracking-[0.7em] uppercase mb-12 flex items-center gap-6">
-               <span className="w-20 h-px bg-indigo-500/20"></span> DEEP WATERS
+            <h4 className="text-indigo-300 font-mono text-sm tracking-[0.7em] uppercase mb-12 flex items-center gap-6">
+               <span className="w-20 h-px bg-indigo-500/20"></span> {title === 'Part 2: Biblical Insight' ? 'CHAPTER 2: THE ANCHOR' : 'DEEP WATERS'}
             </h4>
-            <div className="px-6 md:px-12">
+            <div className="px-6 md:px-12 bg-indigo-500/5 p-12 rounded-[4rem] border border-indigo-500/10">
                {renderContent(content)}
             </div>
           </div>
         );
 
+      case 'Part 3: The Exchange':
+      case 'Heart Mirror':
+        return (
+          <div key={title} className="bg-white/5 border border-white/10 p-16 rounded-[4rem] my-24 animate-slide-up shadow-2xl" style={{ animationDelay: delay }}>
+             <h4 className="text-slate-300 font-mono text-sm tracking-[0.7em] uppercase mb-12 flex items-center gap-6">
+               <Icons.Target className="w-6 h-6 text-indigo-300 opacity-50" /> {title === 'Part 3: The Exchange' ? 'THE COVENANT EXCHANGE' : 'THE HEART MIRROR'}
+             </h4>
+             <div className="space-y-12">
+                {content.split('\n').filter(l => l.trim()).map((q, i) => (
+                  <div key={i} className="flex gap-8 items-start group p-8 rounded-3xl hover:bg-white/5 transition-all">
+                    <span className="font-mono text-xl text-indigo-300 mt-1">[{i+1}]</span>
+                    <p className="text-slate-50 text-3xl group-hover:text-white transition-colors drop-shadow-md leading-relaxed italic">{processLineText(q.replace(/^\d+\.\s*/, ''))}</p>
+                  </div>
+                ))}
+             </div>
+          </div>
+        );
+
+      case 'Part 4: Key Thoughts':
       case 'Wisdom Anchors':
         return (
-          <div key={title} className="bg-indigo-500/20 border-y border-indigo-400/30 py-20 my-20 animate-slide-up text-center shadow-2xl" style={{ animationDelay: delay }}>
-            <h3 className="text-indigo-100 font-mono text-[12px] tracking-[0.7em] uppercase mb-12">ANCHORS FOR THE SOUL</h3>
+          <div key={title} className="bg-indigo-500/20 border-y border-indigo-400/30 py-24 my-24 animate-slide-up text-center shadow-2xl" style={{ animationDelay: delay }}>
+            <h3 className="text-indigo-100 font-mono text-sm tracking-[0.7em] uppercase mb-16">WISDOM ANCHORS</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto px-10">
               {content.split('\n').filter(l => l.trim()).map((thought, i) => (
-                <div key={i} className="p-10 bg-white/5 rounded-[3rem] border border-white/20 italic font-serif-display text-3xl text-white text-left shadow-2xl hover:border-indigo-300/40 transition-all scale-100 hover:scale-[1.02]">
+                <div key={i} className="p-12 bg-white/5 rounded-[3.5rem] border border-white/20 italic font-serif-display text-3xl text-white text-left shadow-2xl hover:border-indigo-300/40 transition-all scale-100 hover:scale-[1.02]">
                   {processLineText(thought.replace(/^\d+\.\s*/, ''))}
                 </div>
               ))}
@@ -189,27 +223,27 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           </div>
         );
 
-      case 'Heart Mirror':
+      case 'Part 5: The Cord':
         return (
-          <div key={title} className="bg-white/5 border border-white/10 p-16 rounded-[4rem] my-24 animate-slide-up shadow-2xl" style={{ animationDelay: delay }}>
-             <h4 className="text-slate-300 font-mono text-[12px] tracking-[0.7em] uppercase mb-12 flex items-center gap-6">
-               <Icons.Target className="w-6 h-6 text-indigo-300 opacity-50" /> THE HEART MIRROR
-             </h4>
-             <div className="space-y-10">
-                {content.split('\n').filter(l => l.trim()).map((q, i) => (
-                  <div key={i} className="flex gap-8 items-start group">
-                    <span className="font-mono text-[15px] text-indigo-300 mt-1">[{i+1}]</span>
-                    <p className="text-slate-50 text-2xl group-hover:text-white transition-colors drop-shadow-md leading-relaxed">{processLineText(q.replace(/^\d+\.\s*/, ''))}</p>
-                  </div>
-                ))}
-             </div>
+          <div key={title} className="mt-24 mb-16 animate-slide-up text-center" style={{ animationDelay: delay }}>
+            <h4 className="text-amber-300 font-mono text-sm tracking-[0.8em] uppercase mb-12 flex justify-center items-center gap-6">
+               <span className="w-20 h-px bg-amber-400/20"></span> THE THREEFOLD CORD
+            </h4>
+            <div className="bg-amber-500/10 border border-amber-400/30 p-16 rounded-[5rem] shadow-[0_0_100px_rgba(212,175,55,0.1)] relative">
+               <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-amber-500 text-white p-4 rounded-full shadow-2xl">
+                 <Icons.Heart className="w-8 h-8" />
+               </div>
+               <div className="text-4xl md:text-5xl font-serif-display italic text-amber-50 leading-snug">
+                 {renderContent(content)}
+               </div>
+            </div>
           </div>
         );
 
       default:
         return (
           <div key={title} className="mb-16 animate-slide-up" style={{ animationDelay: delay }}>
-            <h4 className="text-slate-400 font-mono text-[11px] tracking-[0.6em] uppercase mb-10 flex items-center gap-6">
+            <h4 className="text-slate-400 font-mono text-sm tracking-[0.6em] uppercase mb-10 flex items-center gap-6">
               <span className="w-12 h-px bg-slate-800"></span> {title}
             </h4>
             <div className="text-slate-100 px-6">
