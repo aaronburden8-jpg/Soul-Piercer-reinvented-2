@@ -3,10 +3,11 @@ import React from 'react';
 import { Profile, TacticalLens } from './types';
 
 export const LENS_CONFIG: Record<TacticalLens, { description: string, icon: any }> = {
-  [TacticalLens.EXPLORER]: { description: "Discovering new depths and cinematic narratives through story.", icon: "Compass" },
-  [TacticalLens.STRATEGIST]: { description: "Focused discipline and the architecture of a purposeful life.", icon: "Map" },
-  [TacticalLens.ARCHITECT]: { description: "Building lasting foundations through logical spiritual patterns.", icon: "Layout" },
-  [TacticalLens.HEALER]: { description: "Restorative grace, healing the heart, and finding safe identity.", icon: "ShieldAlert" }
+  [TacticalLens.EXPLORER]: { description: "Discover broad perspectives and open new doors of thought.", icon: "Compass" },
+  [TacticalLens.STRATEGIST]: { description: "Receive a tactical plan to overcome obstacles.", icon: "Map" },
+  [TacticalLens.ARCHITECT]: { description: "Build new systems and structures for your life.", icon: "Layout" },
+  [TacticalLens.HEALER]: { description: "Find restoration, comfort, and emotional alignment.", icon: "ShieldAlert" },
+  [TacticalLens.WILDERNESS]: { description: "Surrender to the unexpected. Receive a unique, unpredictably generated perspective.", icon: "Wind" }
 };
 
 export const PROFILES: Record<string, Profile> = {
@@ -34,6 +35,15 @@ export const PROFILES: Record<string, Profile> = {
     signature: "Love, Aaron",
     structure: "Personal Note Included",
     audience_type: 'adult'
+  },
+  "don thomas": {
+    name: "Don Thomas",
+    role: "Respected Friend and Colleague",
+    tone: "Respectful, empowering, wise. A peer-to-peer connection that honors his work and character.",
+    signature: "Your friend, Aaron",
+    structure: "Personal Note Included",
+    audience_type: 'adult',
+    special_instructions: "Address him with high respect as a valued partner in mission. Focus on legacy, integrity, and spiritual sharpening."
   },
   "caleb": {
     name: "Caleb",
@@ -104,4 +114,5 @@ export const Icons = {
   Layout: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>,
   ShieldAlert: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
   Calendar: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  Wind: ({ className }: IconProps) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>,
 };

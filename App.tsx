@@ -1,9 +1,33 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Icons, PROFILES, LENS_CONFIG } from './constants';
 import { Devotional, ActiveSeries, TacticalLens, SpiritualFocus } from './types';
 import { generateDevotionalText } from './services/geminiService';
 import DevotionalDisplay from './components/DevotionalDisplay';
+
+const Tooltip: React.FC<{ text: string; children: React.ReactNode }> = ({ text, children }) => {
+  const [show, setShow] = useState(false);
+  const timer = useRef<number | null>(null);
+
+  const onEnter = () => {
+    timer.current = window.setTimeout(() => setShow(true), 300);
+  };
+  const onLeave = () => {
+    if (timer.current) clearTimeout(timer.current);
+    setShow(false);
+  };
+
+  return (
+    <div className="relative inline-block" onMouseEnter={onEnter} onMouseLeave={onLeave}>
+      {children}
+      {show && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 p-4 glass-panel rounded-2xl text-[10px] text-white font-mono uppercase tracking-[0.2em] text-center z-[100] pointer-events-none animate-tooltip-in">
+          {text}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const App: React.FC = () => {
   const [input, setInput] = useState('');
@@ -77,6 +101,7 @@ const App: React.FC = () => {
         GUIDE INTEL: 
         Profile: ${match.profile.name}
         Relationship: ${match.profile.role}
+        Tone: ${match.profile.tone}
         Special Instructions: ${match.profile.special_instructions || 'None'}
         ` : 'GUIDE INTEL: Broad spectrum encouragement for a seeking heart.'}
 
@@ -89,7 +114,9 @@ const App: React.FC = () => {
         (A 1-line opening of clarity or gentle tension.)
 
         ${match ? `### Personal Briefing
-        (A warm intro for ${match.profile.name}. 
+        (A deep, warm, and highly personalized note for ${match.profile.name}. 
+        LENGTH: Minimum 150 words. 
+        CONTENT: Explore the heart-connection, specific life-context, and spiritual encouragement tailored to ${match.profile.name}. Do not be generic. 
         MANDATORY CLOSING: End this section ONLY with "${match.profile.signature}")` : ''}
 
         ### The Story
@@ -115,7 +142,8 @@ const App: React.FC = () => {
         CONSTRAINTS: 
         1. STRICTLY NO EM DASHES (—). Use a comma, colon, or a single short hyphen (-) instead.
         2. NO REPETITION across the ${totalDays}-day Journey arc.
-        3. Reflection MUST be Christian-Biblical for non-denominational focus.
+        3. ALL PERSONAL NOTES must be at least 150 words of deep substance.
+        4. Reflection MUST be Christian-Biblical for non-denominational focus.
       `;
 
       setStatusText(isSeries ? `PREPARING DAY ${dayNum} CHAPTER...` : "SEEKING WISDOM...");
@@ -173,8 +201,24 @@ const App: React.FC = () => {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleGenerate();
+    }
+  };
+
+  const getTheologyTooltip = (f: SpiritualFocus) => {
+    switch(f) {
+      case 'non-denominational': return "A Non-denominational, Christ-centered perspective.";
+      case 'catholic': return "Wisdom rooted in Catholic tradition and theology.";
+      case 'theosophist': return "Insights from Theosophical wisdom and universal truth.";
+      default: return "";
+    }
+  };
+
   return (
-    <div className="min-h-screen pb-24 px-4 pt-8 md:pt-16 max-w-4xl mx-auto">
+    <div className="min-h-screen pb-24 px-4 pt-8 md:pt-16 max-w-5xl mx-auto">
       <header className="flex flex-col md:flex-row items-center justify-between mb-12 glass-panel p-10 rounded-[3rem] border border-white/10 relative overflow-hidden group shadow-[0_0_80px_rgba(129,140,248,0.1)]">
         <div className="flex items-center gap-8">
           <div className="w-20 h-20 luminous-gradient rounded-[2rem] flex items-center justify-center text-white aura-glow">
@@ -228,34 +272,42 @@ const App: React.FC = () => {
 
         {!devotional ? (
           <div className="space-y-8 animate-slide-up">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-5">
               {(Object.keys(TacticalLens) as Array<keyof typeof TacticalLens>).map((key) => {
                 const l = TacticalLens[key];
                 const IconComp = (Icons as any)[LENS_CONFIG[l].icon];
                 return (
-                  <button 
-                    key={l}
-                    onClick={() => setSelectedLens(l)}
-                    className={`flex flex-col items-center gap-4 p-6 rounded-[2rem] border transition-all ${selectedLens === l ? 'bg-indigo-500 border-indigo-400 text-white shadow-2xl scale-105' : 'bg-white/5 border-white/5 text-slate-400 hover:text-slate-200'}`}
-                  >
-                    <IconComp className={`w-7 h-7 ${selectedLens === l ? 'text-white' : 'opacity-30'}`} />
-                    <span className="text-[11px] font-bold uppercase tracking-widest">{l} Path</span>
-                  </button>
+                  <Tooltip key={l} text={LENS_CONFIG[l].description}>
+                    <button 
+                      onClick={() => setSelectedLens(l)}
+                      className={`w-full flex flex-col items-center gap-4 p-6 rounded-[2rem] border transition-all ${selectedLens === l ? 'bg-indigo-500 border-indigo-400 text-white shadow-2xl scale-105' : 'bg-white/5 border-white/5 text-slate-400 hover:text-slate-200'}`}
+                    >
+                      <IconComp className={`w-7 h-7 ${selectedLens === l ? 'text-white' : 'opacity-30'}`} />
+                      <span className="text-[11px] font-bold uppercase tracking-widest">{l} Path</span>
+                    </button>
+                  </Tooltip>
                 );
               })}
             </div>
 
             <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
               <div className="flex gap-3 p-2 glass-panel rounded-3xl border border-white/10 items-center">
-                {['glimpse', 'journey'].map(m => (
+                <Tooltip text="A single, immediate insight for the present moment.">
                   <button 
-                    key={m}
-                    onClick={() => setMode(m as any)}
-                    className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === m ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}
+                    onClick={() => setMode('glimpse')}
+                    className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'glimpse' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}
                   >
-                    {m}
+                    Glimpse
                   </button>
-                ))}
+                </Tooltip>
+                <Tooltip text="Create a multi-day devotional path to walk through.">
+                  <button 
+                    onClick={() => setMode('journey')}
+                    className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'journey' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}
+                  >
+                    Journey
+                  </button>
+                </Tooltip>
                 
                 {mode === 'journey' && (
                   <div className="flex items-center gap-3 px-6 border-l border-white/10 animate-slide-up">
@@ -274,9 +326,11 @@ const App: React.FC = () => {
 
                <div className="flex gap-2 p-2 glass-panel rounded-3xl border border-white/10 w-full md:w-auto">
                 {['non-denominational', 'catholic', 'theosophist'].map(f => (
-                  <button key={f} onClick={() => setFocus(f as any)} className={`flex-1 md:flex-none px-7 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${focus === f ? 'bg-slate-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}>
-                    {f.split('-')[0]}
-                  </button>
+                  <Tooltip key={f} text={getTheologyTooltip(f as SpiritualFocus)}>
+                    <button onClick={() => setFocus(f as any)} className={`px-7 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${focus === f ? 'bg-slate-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}>
+                      {f.split('-')[0]}
+                    </button>
+                  </Tooltip>
                 ))}
               </div>
             </div>
@@ -285,6 +339,7 @@ const App: React.FC = () => {
               <textarea 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder={mode === 'glimpse' ? "Seek clarity on a topic, heart-focus, or scripture..." : "Describe a Journey focus..."}
                 className="w-full glass-panel rounded-[3.5rem] p-12 md:p-20 text-3xl md:text-4xl font-serif-display italic text-white placeholder:text-slate-700 focus:outline-none min-h-[400px] resize-none transition-all focus:border-indigo-400/40 shadow-inner leading-relaxed"
               />
