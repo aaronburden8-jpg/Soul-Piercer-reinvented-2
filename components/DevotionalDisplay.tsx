@@ -23,20 +23,19 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
 
   const parseSections = (markdown: string): DevotionalSection[] => {
     if (!markdown) return [];
-    // Split by ### headers, ensuring we capture content even if headers are malformed or partial.
     const parts = markdown.split(/^###\s+(.+)$/gm);
     const sections: DevotionalSection[] = [];
     
     const firstPart = parts[0].trim();
     if (firstPart) {
-      sections.push({ title: "Foundational Insight", content: firstPart });
+      sections.push({ title: "Foundational Analysis", content: firstPart });
     }
 
     for (let i = 1; i < parts.length; i += 2) {
       if (parts[i]) {
         sections.push({
           title: parts[i].trim(),
-          content: parts[i + 1] ? parts[i + 1].trim() : "Extracting deeper wisdom..."
+          content: parts[i + 1] ? parts[i + 1].trim() : ""
         });
       }
     }
@@ -90,13 +89,13 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
     setIsDiving(true);
     setDiveError(null);
     setDiveContent("");
-    setDiveStatus("Initiating Research Link...");
+    setDiveStatus("Calibrating Deep Intelligence...");
     
     const statuses = [
-      "Accessing Historical Archives...",
-      "Decoding Etymological Roots...",
-      "Mapping Biblical Archetypes...",
-      "Synthesizing Strategic Insights..."
+      "Querying Theological Archives...",
+      "Mapping Historical Contexts...",
+      "Extracting Etymological Truths...",
+      "Synthesizing Sacred Wisdom..."
     ];
     
     let statusIdx = 0;
@@ -105,7 +104,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
         setDiveStatus(statuses[statusIdx % statuses.length]);
         statusIdx++;
       }
-    }, 4500);
+    }, 4000);
 
     try {
       await generateDeepDiveStream(devotional.content, (chunk) => {
@@ -114,9 +113,8 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       });
     } catch (err: any) {
       console.error("Deep dive error:", err);
-      // Ensure the error is descriptive and persists.
-      setDiveError(`Transmission Fault: ${err.message || 'The archive connection was lost. Please check your network and try again.'}`);
-      setDiveStatus("Connection Severed.");
+      setDiveError(err.message || "The archive connection was interrupted. Please try again.");
+      setDiveStatus("Connection Failed.");
     } finally {
       clearInterval(statusInterval);
       setIsDiving(false);
@@ -260,23 +258,12 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
 
         <div className="mt-40 pt-20 border-t border-white/5 max-w-4xl mx-auto">
           {diveError && (
-            <div className="mb-8 p-10 rounded-[3rem] bg-red-500/10 border border-red-500/20 text-red-200 text-center flex flex-col items-center gap-6 animate-slide-up">
-              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
-                <Icons.ShieldAlert className="w-6 h-6" />
-              </div>
-              <p className="font-mono text-[11px] uppercase tracking-widest leading-relaxed">
-                {diveError}
-              </p>
-              <button 
-                onClick={startDeepDive}
-                className="px-8 py-3 rounded-xl bg-red-500 text-white font-mono text-[10px] uppercase tracking-widest font-bold hover:bg-red-600 transition-all"
-              >
-                Retry Connection
-              </button>
+            <div className="mb-8 p-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-200 text-center font-mono text-[11px] uppercase tracking-widest">
+              {diveError}
             </div>
           )}
 
-          {!diveContent && !isDiving && !diveError && (
+          {!diveContent && !isDiving && (
             <button 
               onClick={startDeepDive}
               className="w-full py-12 rounded-[4rem] bg-white/5 border border-white/10 text-white font-mono text-[13px] tracking-[0.7em] uppercase hover:bg-white/10 transition-all flex items-center justify-center gap-6 active:scale-95 shadow-xl"
@@ -290,7 +277,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
                <Icons.Loader className="w-12 h-12 text-indigo-400" />
                <div className="text-center">
                  <p className="text-indigo-300 font-mono text-[12px] uppercase tracking-[0.4em] mb-2">{diveStatus}</p>
-                 <p className="text-slate-500 text-[10px] uppercase tracking-[0.2em]">Synchronizing with stable research core...</p>
+                 <p className="text-slate-500 text-[10px] uppercase tracking-[0.2em]">The collective intelligence is parsing sacred truths...</p>
                </div>
             </div>
           )}

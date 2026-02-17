@@ -1,8 +1,8 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// Using gemini-flash-latest for standard devotional generation for maximum stability and speed.
-export const generateDevotionalText = async (prompt: string, model: string = 'gemini-flash-latest') => {
+// Standard devotional generation using Flash for high speed and consistent quality.
+export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model,
@@ -17,31 +17,32 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
 };
 
 /**
- * Perform a Theological and Historical Deep Dive via Streaming.
- * Using gemini-flash-latest to match the stable performance of the rest of the app.
+ * Theological and Historical Deep Dive via Streaming.
+ * Uses Gemini 3 Pro for superior reasoning and historical accuracy.
  */
 export const generateDeepDiveStream = async (content: string, onChunk: (text: string) => void) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const prompt = `Act as an expert theologian and historical researcher. 
-  Perform a Theological and Historical Deep Dive on the following briefing. 
+  Perform an exhaustive Theological and Historical Deep Dive on the following briefing. 
   
   Focus on: 
-  1. Original language (Greek/Hebrew) insights.
-  2. Historical context.
-  3. Biblical archetypes.
+  1. Etymological analysis of key Greek or Hebrew terms.
+  2. Cultural and historical context of the time.
+  3. Connection to grand Biblical archetypes and meta-narratives.
   
   BRIEFING CONTENT:
   ${content}
 
-  Format: Clear headers (###), bullet points. No em-dashes. Be concise but profound.`;
+  Format using clear headers (###) and avoid long dashes. Be profound, academic yet accessible, and soul-sharpening.`;
   
   try {
     const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-pro-preview',
       contents: [{ parts: [{ text: prompt }] }],
       config: {
-        temperature: 0.7
+        temperature: 0.7,
+        thinkingConfig: { thinkingBudget: 0 } // Disable thinking for immediate streaming results
       }
     });
 
@@ -63,16 +64,16 @@ export const generateDeepDive = async (content: string) => {
   const prompt = `Perform a deep theological dive on: ${content}`;
   
   const response = await ai.models.generateContent({
-    model: 'gemini-flash-latest',
+    model: 'gemini-3-pro-preview',
     contents: [{ parts: [{ text: prompt }] }],
     config: {
-      temperature: 0.7
+        thinkingConfig: { thinkingBudget: 0 }
     }
   });
   return response.text;
 };
 
-// Audio generation remains on the specialized TTS model.
+// Audio generation using the specialized TTS model.
 export const generateAudio = async (text: string) => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
