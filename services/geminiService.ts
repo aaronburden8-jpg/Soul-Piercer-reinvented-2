@@ -16,7 +16,10 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
   return response.text;
 };
 
-// Streaming version of the deep dive for better performance and user feedback.
+/**
+ * Perform a Theological and Historical Deep Dive using a streaming response.
+ * Simplified the request structure to match successful simple text generation.
+ */
 export const generateDeepDiveStream = async (content: string, onChunk: (text: string) => void) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Act as an expert theologian and historical researcher. 
@@ -32,12 +35,12 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
 
   Format: Clear headers (###), bullet points. No em-dashes. Be concise but profound.`;
   
+  // Use a simpler string-based contents parameter for maximum compatibility.
   const responseStream = await ai.models.generateContentStream({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-3-flash-preview', // Switching to flash for speed/reliability test, but user can change back to pro
     contents: prompt,
     config: {
-      temperature: 0.7,
-      maxOutputTokens: 2000
+      temperature: 0.7
     }
   });
 
@@ -49,7 +52,7 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
   }
 };
 
-// Keeping original as fallback if needed, but the UI will pivot to streaming.
+// Simplified non-streaming version
 export const generateDeepDive = async (content: string) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Act as an expert theologian and historical researcher. 
@@ -66,13 +69,13 @@ export const generateDeepDive = async (content: string) => {
   Format: Clear headers, bullet points. No em-dashes.`;
   
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-3-flash-preview',
     contents: prompt
   });
   return response.text;
 };
 
-// Generates audio using the specialized gemini-2.5-flash-preview-tts model for high-quality speech.
+// Audio generation using the specialized gemini-2.5-flash-preview-tts model.
 export const generateAudio = async (text: string) => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -80,7 +83,7 @@ export const generateAudio = async (text: string) => {
       model: "gemini-2.5-flash-preview-tts",
       contents: [{ parts: [{ text: `Say with warm, authentic affection: ${text}` }] }],
       config: {
-        responseModalities: [Modality.AUDIO],
+        responseModalalities: [Modality.AUDIO],
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: { voiceName: 'Kore' },
@@ -97,7 +100,7 @@ export const generateAudio = async (text: string) => {
   }
 };
 
-// Decodes a base64 string into a Uint8Array.
+// Utility functions for audio decoding.
 export const decodeBase64Audio = (base64: string) => {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -108,7 +111,6 @@ export const decodeBase64Audio = (base64: string) => {
   return bytes;
 };
 
-// Decodes raw PCM audio data into an AudioBuffer.
 export const decodeAudioData = async (
   data: Uint8Array,
   ctx: AudioContext,
@@ -128,7 +130,6 @@ export const decodeAudioData = async (
   return buffer;
 };
 
-// Helper function to play an audio buffer through the destination.
 export const playAudioBuffer = async (data: Uint8Array, audioCtx: AudioContext) => {
   const buffer = await decodeAudioData(data, audioCtx, 24000, 1);
   const source = audioCtx.createBufferSource();
