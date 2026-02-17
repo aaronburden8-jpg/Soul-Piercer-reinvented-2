@@ -5,7 +5,8 @@ export enum TacticalLens {
   ARCHITECT = 'Architect',
   HEALER = 'Healer',
   WILDERNESS = 'Wilderness',
-  MARRIAGE = 'Marriage'
+  MARRIAGE = 'Marriage',
+  WHOLEHEART = 'Wholeheart'
 }
 
 export type SpiritualFocus = 'non-denominational' | 'catholic' | 'theosophist';

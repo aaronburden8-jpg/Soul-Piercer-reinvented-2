@@ -62,55 +62,66 @@ const App: React.FC = () => {
     return null;
   }, [input]);
 
+  const getTheologyTooltip = (f: SpiritualFocus) => {
+    switch(f) {
+      case 'non-denominational': return "A Non-denominational, Christ-centered perspective.";
+      case 'catholic': return "Wisdom rooted in Catholic tradition and theology.";
+      case 'theosophist': return "Insights from Theosophical wisdom and universal truth.";
+      default: return "";
+    }
+  };
+
   const getSystemPrompt = (lens: TacticalLens, religiousContext: string, match: any, isSeries: boolean, dayNum: number, totalDays: number) => {
     if (lens === TacticalLens.MARRIAGE) {
       return `
         SYSTEM INSTRUCTION FOR MARRIAGE PATH:
 
         1. THE PERSONA:
-        You are a Kingdom Devotional Designer, an expert in spiritual intimacy and marital unity. Your goal is to capture immediate buy-in from both partners, even those spiritually reluctant. Craft content that is raw, authentic, and Christ-centered.
+        You are an Expert Devotional Designer & Kingdom Strategist for Couples. You focus on spiritual intimacy and marital unity. Capture immediate buy-in with raw, authentic, Christ-centered wisdom.
 
         2. THE KINGDOM FILTER:
-        Every response must point to Jesus as the source and solution. No vague moralism. Reflect Yahweh's covenant character: sacrificial, persistent, and transformative.
+        Every response must point to Jesus as the source and solution. Reflect Yahweh's covenant character: sacrificial and transformative.
 
-        3. THE ENGAGEMENT STRATEGY:
-        NLP Anchoring: Use emotionally provocative openers.
-        Active Voice: Short, punchy sentences.
-        No Fluff: Zero clichés. 
-
-        4. THE REQUIRED OUTPUT STRUCTURE (MARRIAGE LITURGY):
-        Strictly follow this structure:
-
+        3. THE REQUIRED OUTPUT STRUCTURE (MARRIAGE LITURGY):
         ### Header
-        A Creative Title + 1 Primary Scripture (OT or NT).
-
+        Creative Title + Primary Scripture.
         ### The Hook
-        A 1-2 sentence emotional opener that previews the tension or conflict.
+        1-2 sentence emotional opener.
+        ${match ? `### Personal Briefing\n(Note for ${match.profile.name}. 150+ words. End ONLY with "${match.profile.signature}")` : ''}
+        ### Part 1: The Insight
+        200-300 words. Relatable story merging with theological meat. Bridge work/life with Biblical truth.
+        ### Part 2: The Exchange
+        Two deep, bold questions for the couple to ask each other right now to foster vulnerability.
+        ### Part 3: The Cord
+        A unified, 3-sentence prayer or affirmation to say together aloud.
 
-        ${match ? `### Personal Briefing
-        (A deep, warm note for ${match.profile.name}. LENGTH: Minimum 150 words. End ONLY with "${match.profile.signature}")` : ''}
+        CONSTRAINTS: NO EM DASHES. NO REPETITION across the ${totalDays}-day arc.
+      `;
+    }
 
-        ### Part 1: The Story
-        A relatable, cinematic, metaphor-driven story that mirrors real-life marital or relational tensions. 
-        LENGTH: Strictly 200 to 300 words.
+    if (lens === TacticalLens.WHOLEHEART) {
+      return `
+        SYSTEM INSTRUCTION FOR WHOLEHEART PATH:
 
-        ### Part 2: Biblical Insight
-        A deep, theological exploration of the topic specifically for a couple. Connect the reality of the story to the character of Christ and the covenant of marriage.
-        LENGTH: Strictly 200 to 300 words.
+        1. THE PERSONA:
+        You are a Mentor to the Dedicated. Validate the struggle of singleness or isolation but pivot powerfully to the strength of undivided devotion (1 Cor 7).
 
-        ### Part 3: The Exchange
-        Two deep, bold, soul-piercing questions for the couple to ask each other right now to foster vulnerability.
+        2. THE KINGDOM FILTER:
+        Focus on completeness in Christ. Shift from "waiting" to "worshipping."
 
-        ### Part 4: Key Thoughts
-        3-4 punchy, memorable "Wisdom Anchors" for the couple to hold onto throughout the day.
+        3. THE REQUIRED OUTPUT STRUCTURE (UNDIVIDED LITURGY):
+        ### Header
+        Creative Title + Scripture.
+        ### The Reality
+        200 words. Honest validation of the struggle, loneliness, or pressure of this season. Be raw.
+        ### The Reframing
+        200 words. Robust theology on completeness in Christ. Reclaim the power of singleness as a strategic kingdom advantage.
+        ### The Mirror
+        Two sharp questions on calling and identity.
+        ### The Anchor
+        A powerful "I am" declaration rooted in identity in Christ.
 
-        ### Part 5: The Cord
-        A unified, 3-sentence prayer or affirmation for the couple to say together aloud.
-
-        CONSTRAINTS: 
-        1. STRICTLY NO EM DASHES (—).
-        2. NO REPETITION across the ${totalDays}-day Journey arc.
-        3. Maintain the "Kingdom Devotional Designer" persona.
+        CONSTRAINTS: NO EM DASHES. NO REPETITION across the ${totalDays}-day arc.
       `;
     }
 
@@ -118,53 +129,19 @@ const App: React.FC = () => {
     return `
       ACT AS: A soulful devotional writer and compassionate wisdom guide. 
       GOAL: Awaken spiritual hunger and provide deep, grounded hope. 
-      TONE: Luminous, warm, expansive, and deeply personal. 
-      RELIGIOUS FOCUS: ${religiousContext}. Every section must be rooted in Biblical truth.
+      RELIGIOUS FOCUS: ${religiousContext}.
       WISDOM PATH: ${lens} (${lensInfo.description})
       
-      ${isSeries ? `JOURNEY STATUS: Day ${dayNum} of ${totalDays}. 
-      This is a PROGRESSIVE NARRATIVE ARC spanning ${totalDays} days. 
-      MANDATORY: Do not repeat previous day narrative beats. Advance the story chapter-by-chapter. Build to a sophisticated climax.` : 'GLIMPSE STATUS: A single moment of clarity.'}
-      
-      ${match ? `
-      GUIDE INTEL: 
-      Profile: ${match.profile.name}
-      Relationship: ${match.profile.role}
-      Tone: ${match.profile.tone}
-      Special Instructions: ${match.profile.special_instructions || 'None'}
-      ` : 'GUIDE INTEL: Broad spectrum encouragement for a seeking heart.'}
-
-      FLOW OF CONTENT (STRICT ORDER):
-      
       ### The Word
-      (Provide 1-2 expansive scriptures. Full text + reference.)
-
       ### First Light
-      (A 1-line opening of clarity or gentle tension.)
-
-      ${match ? `### Personal Briefing
-      (A deep, warm, and highly personalized note for ${match.profile.name}. 
-      LENGTH: Minimum 150 words. 
-      MANDATORY CLOSING: End this section ONLY with "${match.profile.signature}")` : ''}
-
+      ${match ? `### Personal Briefing` : ''}
       ### The Story
-      (An immersive cinematic metaphor. LENGTH: 200-300 words.)
-
       ### The Reflection
-      (A deep theological and heart-centered exploration. LENGTH: 200-300 words.)
-
       ### Steps Forward
-      (2 gentle, practical action steps.)
-
       ### Wisdom Anchors
-      (2 memorable takeaways.)
-
       ### Heart Mirror
-      (3 reflective diagnostic questions.)
 
-      CONSTRAINTS: 
-      1. STRICTLY NO EM DASHES (—).
-      2. ALL PERSONAL NOTES must be at least 150 words of deep substance.
+      CONSTRAINTS: NO EM DASHES. ALL PERSONAL NOTES 150+ words.
     `;
   };
 
@@ -183,7 +160,7 @@ const App: React.FC = () => {
       const totalDays = seriesContext ? seriesContext.totalDays : journeyDays;
 
       const religiousContext = focus === 'non-denominational' 
-        ? 'Non-denominational Christian (Biblically grounded, Christ-centered, focusing on the Gospel of Grace)' 
+        ? 'Non-denominational Christian' 
         : focus;
 
       const prompt = `
@@ -230,16 +207,9 @@ const App: React.FC = () => {
         }
       }
 
-      setMomentum(prev => {
-        const next = prev + 1;
-        localStorage.setItem('soul_piercer_mom', next.toString());
-        return next;
-      });
-
+      setMomentum(prev => prev + 1);
       setInput("");
-      setStatusText("");
     } catch (err: any) {
-      console.error(err);
       setError(err.message || "Connection lost.");
     } finally {
       setLoading(false);
@@ -253,13 +223,40 @@ const App: React.FC = () => {
     }
   };
 
-  const getTheologyTooltip = (f: SpiritualFocus) => {
-    switch(f) {
-      case 'non-denominational': return "A Non-denominational, Christ-centered perspective.";
-      case 'catholic': return "Wisdom rooted in Catholic tradition and theology.";
-      case 'theosophist': return "Insights from Theosophical wisdom and universal truth.";
-      default: return "";
-    }
+  const pathways = [
+    TacticalLens.EXPLORER,
+    TacticalLens.STRATEGIST,
+    TacticalLens.ARCHITECT,
+    TacticalLens.HEALER,
+    TacticalLens.WILDERNESS
+  ];
+
+  const seasons = [
+    TacticalLens.MARRIAGE,
+    TacticalLens.WHOLEHEART
+  ];
+
+  const renderPathButton = (l: TacticalLens) => {
+    const IconComp = (Icons as any)[LENS_CONFIG[l].icon];
+    const isMarriage = l === TacticalLens.MARRIAGE;
+    const isWholeheart = l === TacticalLens.WHOLEHEART;
+    
+    let style = {};
+    if (isMarriage) style = { border: '1px solid rgba(212, 175, 55, 0.5)' };
+    if (isWholeheart) style = { border: '1px solid rgba(226, 232, 240, 0.6)' };
+
+    return (
+      <Tooltip key={l} text={LENS_CONFIG[l].description}>
+        <button 
+          onClick={() => setSelectedLens(l)}
+          style={style}
+          className={`w-full flex flex-col items-center gap-4 p-6 rounded-[2rem] border transition-all ${selectedLens === l ? 'bg-indigo-500 border-indigo-400 text-white shadow-2xl scale-105' : 'bg-white/5 border-white/5 text-slate-400 hover:text-slate-200'} ${isMarriage ? 'hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]' : ''} ${isWholeheart ? 'hover:shadow-[0_0_20px_rgba(226,232,240,0.2)]' : ''}`}
+        >
+          <IconComp className={`w-7 h-7 ${selectedLens === l ? 'text-white' : isMarriage ? 'text-amber-200/50' : isWholeheart ? 'text-slate-200/50' : 'opacity-30'}`} />
+          <span className={`text-[11px] font-bold uppercase tracking-widest`}>{l} Path</span>
+        </button>
+      </Tooltip>
+    );
   };
 
   return (
@@ -295,118 +292,54 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {activeSeries && !devotional && !loading && (
-          <div className="mb-10 p-8 glass-panel rounded-[2.5rem] border border-indigo-400/30 bg-indigo-500/5 animate-slide-up flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-5">
-              <div className="p-4 bg-indigo-500/10 rounded-2xl">
-                <Icons.Calendar className="w-7 h-7 text-indigo-300" />
-              </div>
-              <div>
-                <h4 className="text-[11px] font-mono font-black uppercase tracking-widest text-indigo-300">Active Journey</h4>
-                <p className="text-white font-serif-display text-xl italic">{activeSeries.topic} <span className="text-slate-400 not-italic text-sm ml-3">— Day {activeSeries.currentDay}/{activeSeries.totalDays}</span></p>
-              </div>
-            </div>
-            <button 
-              onClick={() => handleGenerate(activeSeries)}
-              className="px-10 py-4 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-white font-mono text-[11px] uppercase tracking-widest font-bold shadow-2xl transition-all"
-            >
-              Continue Journey
-            </button>
-          </div>
-        )}
-
         {!devotional ? (
-          <div className="space-y-8 animate-slide-up">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-              {(Object.keys(TacticalLens) as Array<keyof typeof TacticalLens>).map((key) => {
-                const l = TacticalLens[key];
-                const IconComp = (Icons as any)[LENS_CONFIG[l].icon];
-                const isMarriage = l === TacticalLens.MARRIAGE;
-                return (
-                  <Tooltip key={l} text={LENS_CONFIG[l].description}>
-                    <button 
-                      onClick={() => setSelectedLens(l)}
-                      style={isMarriage ? { border: '1px solid rgba(212, 175, 55, 0.5)' } : {}}
-                      className={`w-full flex flex-col items-center gap-4 p-6 rounded-[2rem] border transition-all ${selectedLens === l ? 'bg-indigo-500 border-indigo-400 text-white shadow-2xl scale-105' : 'bg-white/5 border-white/5 text-slate-400 hover:text-slate-200'} ${isMarriage ? 'hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]' : ''}`}
-                    >
-                      <IconComp className={`w-7 h-7 ${selectedLens === l ? 'text-white' : isMarriage ? 'text-amber-200/50' : 'opacity-30'}`} />
-                      <span className={`text-[11px] font-bold uppercase tracking-widest ${isMarriage && selectedLens !== l ? 'text-amber-100/70' : ''}`}>{l} Path</span>
-                    </button>
-                  </Tooltip>
-                );
-              })}
+          <div className="space-y-12 animate-slide-up">
+            <div className="flex flex-col gap-8">
+               <div className="grid grid-cols-2 md:grid-cols-5 gap-5">
+                 {pathways.map(renderPathButton)}
+               </div>
+               
+               <div className="flex items-center gap-6 my-4">
+                  <div className="h-px flex-1 bg-white/10"></div>
+                  <span className="font-mono text-[10px] text-slate-500 tracking-[0.5em] uppercase font-black">Seasons</span>
+                  <div className="h-px flex-1 bg-white/10"></div>
+               </div>
+
+               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                 {seasons.map(renderPathButton)}
+               </div>
             </div>
 
             <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
               <div className="flex gap-3 p-2 glass-panel rounded-3xl border border-white/10 items-center">
                 <Tooltip text="A single, immediate insight for the present moment.">
-                  <button 
-                    onClick={() => setMode('glimpse')}
-                    className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'glimpse' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    Glimpse
-                  </button>
+                  <button onClick={() => setMode('glimpse')} className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'glimpse' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}>Glimpse</button>
                 </Tooltip>
                 <Tooltip text="Create a multi-day devotional path to walk through.">
-                  <button 
-                    onClick={() => setMode('journey')}
-                    className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'journey' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    Journey
-                  </button>
+                  <button onClick={() => setMode('journey')} className={`px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${mode === 'journey' ? 'bg-indigo-500 text-white shadow-xl' : 'text-slate-400 hover:text-slate-200'}`}>Journey</button>
                 </Tooltip>
-                
                 {mode === 'journey' && (
-                  <div className="flex items-center gap-3 px-6 border-l border-white/10 animate-slide-up">
+                  <div className="flex items-center gap-3 px-6 border-l border-white/10">
                     <span className="font-mono text-[9px] text-slate-500 uppercase tracking-widest font-bold">Days:</span>
-                    <input 
-                      type="number" 
-                      min="1" 
-                      max="30" 
-                      value={journeyDays}
-                      onChange={(e) => setJourneyDays(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
-                      className="w-14 bg-white/5 border border-white/10 rounded-xl px-2 py-2 text-center text-white font-mono text-sm focus:outline-none focus:border-indigo-400/40"
-                    />
+                    <input type="number" min="1" max="30" value={journeyDays} onChange={(e) => setJourneyDays(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))} className="w-14 bg-white/5 border border-white/10 rounded-xl px-2 py-2 text-center text-white font-mono text-sm" />
                   </div>
                 )}
               </div>
-
-               <div className="flex gap-2 p-2 glass-panel rounded-3xl border border-white/10 w-full md:w-auto">
-                {['non-denominational', 'catholic', 'theosophist'].map(f => (
-                  <Tooltip key={f} text={getTheologyTooltip(f as SpiritualFocus)}>
+               <div className="flex gap-2 p-2 glass-panel rounded-3xl border border-white/10">
+                {(['non-denominational', 'catholic', 'theosophist'] as SpiritualFocus[]).map(f => (
+                  <Tooltip key={f} text={getTheologyTooltip(f)}>
                     <button onClick={() => setFocus(f as any)} className={`px-7 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${focus === f ? 'bg-slate-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}>
-                      {f.split('-')[0]}
+                      {f === 'non-denominational' ? 'NON-DENOM' : f.toUpperCase()}
                     </button>
                   </Tooltip>
                 ))}
               </div>
             </div>
 
-            <div className="relative group">
-              <textarea 
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={mode === 'glimpse' ? "Seek clarity on a topic, heart-focus, or scripture..." : "Describe a Journey focus..."}
-                className="w-full glass-panel rounded-[3.5rem] p-12 md:p-20 text-3xl md:text-4xl font-serif-display italic text-white placeholder:text-slate-700 focus:outline-none min-h-[400px] resize-none transition-all focus:border-indigo-400/40 shadow-inner leading-relaxed"
-              />
-              
-              {activeProfile && (
-                <div className="absolute top-10 right-14 flex items-center gap-4 bg-indigo-500/20 px-6 py-3 rounded-full border border-indigo-400/30">
-                  <span className="font-mono text-[11px] text-indigo-200 uppercase tracking-widest font-bold">FOCUS: {activeProfile.profile.name}</span>
-                  <div className="w-3 h-3 rounded-full bg-indigo-400 aura-glow"></div>
-                </div>
-              )}
-
-              <div className="absolute bottom-12 right-12 left-12 flex items-center justify-between">
-                <div className="font-mono text-[11px] text-slate-500 tracking-[0.5em] uppercase hidden md:flex items-center gap-4">
-                  <Icons.Target className="w-5 h-5 opacity-30" /> {statusText || "AWAITING_FOCUS"}
-                </div>
-                <button 
-                  onClick={() => handleGenerate()}
-                  disabled={loading || !input.trim()}
-                  className="px-16 py-6 rounded-3xl luminous-gradient text-white font-mono text-[12px] font-black uppercase tracking-[0.4em] shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-20 flex items-center gap-5"
-                >
+            <div className="relative">
+              <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Enter your focus..." className="w-full glass-panel rounded-[3.5rem] p-12 md:p-20 text-3xl md:text-4xl font-serif-display italic text-white placeholder:text-slate-700 focus:outline-none min-h-[400px] resize-none transition-all leading-relaxed" />
+              <div className="absolute bottom-12 right-12 flex items-center gap-6">
+                <button onClick={() => handleGenerate()} disabled={loading || !input.trim()} className="px-16 py-6 rounded-3xl luminous-gradient text-white font-mono text-[12px] font-black uppercase tracking-[0.4em] shadow-2xl transition-all hover:scale-105 active:scale-95 disabled:opacity-20 flex items-center gap-5">
                   {loading ? <Icons.Loader className="w-5 h-5" /> : <Icons.Send className="w-5 h-5" />}
                   {loading ? "BREATHING..." : mode === 'journey' ? `START ${journeyDays}-DAY JOURNEY` : `EXPLORE GLIMPSE`}
                 </button>
@@ -416,32 +349,15 @@ const App: React.FC = () => {
         ) : (
           <div className="animate-slide-up pb-24">
             <div className="flex justify-between items-center mb-10 px-6">
-              <button onClick={() => setDevotional(null)} className="text-slate-400 hover:text-white font-mono text-[11px] uppercase tracking-widest flex items-center gap-4 transition-all group">
-                <Icons.ChevronRight className="rotate-180 w-5 h-5 group-hover:-translate-x-2 transition-transform" /> RETURN TO SANCTUARY
+              <button onClick={() => setDevotional(null)} className="text-slate-400 hover:text-white font-mono text-[11px] uppercase tracking-widest flex items-center gap-4 transition-all">
+                <Icons.ChevronRight className="rotate-180 w-5 h-5" /> RETURN TO SANCTUARY
               </button>
-              <div className="text-[11px] font-mono text-indigo-300 uppercase tracking-widest font-bold">
-                {devotional.lens}
-              </div>
+              <div className="text-[11px] font-mono text-indigo-300 uppercase tracking-widest font-bold">{devotional.lens}</div>
             </div>
             <DevotionalDisplay devotional={devotional} />
           </div>
         )}
       </main>
-
-      <footer className="fixed bottom-0 left-0 w-full p-8 pointer-events-none z-50">
-        <div className="max-w-4xl mx-auto flex justify-between items-center px-12 py-6 glass-panel rounded-[2.5rem] border border-white/20 pointer-events-auto shadow-2xl">
-          <div className="flex gap-10 items-center">
-            <div className="flex items-center gap-4">
-              <div className="w-3 h-3 rounded-full bg-emerald-400 aura-glow"></div>
-              <span className="font-mono text-[10px] text-slate-300 uppercase tracking-widest">HARMONY: STABLE</span>
-            </div>
-          </div>
-          <div className="font-mono text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-5">
-            {loading ? "RECEIVING WORDS..." : "AWAITING YOUR HEART"}
-            <div className={`w-1.5 h-5 bg-indigo-400/40 rounded-full ${loading ? 'animate-pulse' : 'opacity-20'}`}></div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
