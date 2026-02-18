@@ -3,13 +3,16 @@ import { GoogleGenAI, Modality } from "@google/genai";
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Robust text generation with automatic retries for Quota/Rate limits.
- * Utilizing gemini-3-pro-preview for high-quality theological reasoning.
+ * Senior Engineer Note: We instantiation GoogleGenAI inside each function to ensure it always
+ * retrieves the most up-to-date process.env.API_KEY.
  */
 export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-pro-preview') => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) throw new Error("Sanctuary Key not detected.");
+  
+  const ai = new GoogleGenAI({ apiKey });
   let attempts = 5; 
-  let lastError: any = null;
+  let waitTime = 3000;
   
   while (attempts > 0) {
     try {
@@ -19,139 +22,54 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
         config: {
           temperature: 0.8,
           topP: 0.95,
-          topK: 40,
         }
       });
       
       const text = response.text;
-      
-      // If text is missing, it might be a safety block or an empty generation
-      if (!text) {
-        console.error("AI returned empty text. Finish Reason:", response.candidates?.[0]?.finishReason);
-        throw new Error("The Sanctuary connection was interrupted by safety filters or an empty response. Retrying...");
-      }
-
+      if (!text) throw new Error("Empty response received.");
       return text;
     } catch (err: any) {
-      lastError = err;
       const errStr = String(err).toLowerCase();
+      const isQuota = errStr.includes('429') || errStr.includes('quota') || errStr.includes('exhausted');
       
-      // broad check for rate limiting/quota errors (429) or our custom safety error
-      const isRetryable = errStr.includes('429') || 
-                          errStr.includes('quota') || 
-                          errStr.includes('exhausted') || 
-                          errStr.includes('limit') ||
-                          errStr.includes('interrupted');
-
-      if (isRetryable && attempts > 1) {
-        const waitTime = Math.pow(2, (6 - attempts)) * 1000;
-        console.warn(`[RECOVERY] Attempt ${6 - attempts} failed. Retrying in ${waitTime}ms...`);
+      if (isQuota && attempts > 1) {
+        console.warn(`[QUOTA_RECOVERY] Overcrowded archives. Retrying in ${waitTime}ms... (${attempts} remaining)`);
         await sleep(waitTime);
         attempts--;
+        waitTime *= 2; // Exponential backoff
         continue;
       }
       throw err;
     }
   }
-  throw lastError;
 };
 
-/**
- * Streaming theological depth utilizing the gemini-3-pro-preview model for expert reasoning.
- */
 export const generateDeepDiveStream = async (content: string, onChunk: (text: string) => void) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Act as an expert theologian and historical researcher. 
-  Perform an Optional Additional Theological Context analysis on the following briefing. 
-  
-  Focus on: 
-  1. Original language (Greek/Hebrew) insights.
-  2. Historical context.
-  3. Biblical archetypes.
-  
-  BRIEFING CONTENT:
-  ${content}
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) throw new Error("Sanctuary Key missing.");
 
-  Format: Clear headers (###), bullet points. No em-dashes. Be concise but profound.`;
+  const ai = new GoogleGenAI({ apiKey });
+  const prompt = `Act as an expert theologian. 
+  Perform a profound Theological Context analysis on the following devotional briefing. 
+  Focus on original Greek/Hebrew meanings and archetypal significance.
+  BRIEFING: ${content}
+  Format with ### headers and clean bullet points.`;
   
   try {
     const responseStream = await ai.models.generateContentStream({
       model: 'gemini-3-pro-preview',
       contents: [{ parts: [{ text: prompt }] }],
-      config: {
-        temperature: 0.7
-      }
     });
 
     for await (const chunk of responseStream) {
       const text = chunk.text;
-      if (text) {
-        onChunk(text);
-      }
+      if (text) onChunk(text);
     }
   } catch (err: any) {
-    console.error("Theological stream failed:", err);
+    const errStr = String(err).toLowerCase();
+    if (errStr.includes('429') || errStr.includes('quota')) {
+       console.warn("[QUOTA] Deep dive stream hit rate limit.");
+    }
     throw err;
   }
-};
-
-export const generateAudio = async (text: string) => {
-  try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text: `Say with warm, authentic affection: ${text}` }] }],
-      config: {
-        responseModalities: [Modality.AUDIO],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Kore' },
-          },
-        },
-      },
-    });
-
-    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    return base64Audio;
-  } catch (err) {
-    console.error("Audio generation failed:", err);
-    return null;
-  }
-};
-
-export const decodeBase64Audio = (base64: string) => {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-};
-
-export const decodeAudioData = async (
-  data: Uint8Array,
-  ctx: AudioContext,
-  sampleRate: number,
-  numChannels: number,
-): Promise<AudioBuffer> => {
-  const dataInt16 = new Int16Array(data.buffer);
-  const frameCount = dataInt16.length / numChannels;
-  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-
-  for (let channel = 0; channel < numChannels; channel++) {
-    const channelData = buffer.getChannelData(channel);
-    for (let i = 0; i < frameCount; i++) {
-      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
-    }
-  }
-  return buffer;
-};
-
-export const playAudioBuffer = async (data: Uint8Array, audioCtx: AudioContext) => {
-  const buffer = await decodeAudioData(data, audioCtx, 24000, 1);
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  source.connect(audioCtx.destination);
-  source.start();
 };
