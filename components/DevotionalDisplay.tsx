@@ -12,7 +12,6 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   const [isDiving, setIsDiving] = useState(false);
   const [diveStatus, setDiveStatus] = useState<string>("");
   const [diveError, setDiveError] = useState<boolean>(false);
-  const diveEndRef = useRef<HTMLDivElement>(null);
   const hasStartedDive = useRef<boolean>(false);
 
   useEffect(() => {
@@ -24,12 +23,6 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       return () => clearTimeout(timer);
     }
   }, [devotional.id]);
-
-  useEffect(() => {
-    if (isDiving && diveEndRef.current) {
-      diveEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [diveContent, isDiving]);
 
   const parseSections = (markdown: string): DevotionalSection[] => {
     if (!markdown) return [];
@@ -282,7 +275,6 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
                    </div>
                 ))}
               </div>
-              <div ref={diveEndRef} />
             </div>
           )}
         </div>
