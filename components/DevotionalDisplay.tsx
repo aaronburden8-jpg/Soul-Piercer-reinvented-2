@@ -55,7 +55,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       const italicParts = part.split(/(\*.*?\*)/g);
       return italicParts.map((ip, j) => {
         if (ip.startsWith('*') && ip.endsWith('*')) {
-          return <em key={`${i}-${j}`} className="italic text-indigo-200">{ip.slice(1, -1)}</em>;
+          return <em key={`${i}-${j}`} className="italic text-emerald-200">{ip.slice(1, -1)}</em>;
         }
         return ip;
       });
@@ -67,11 +67,17 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       const t = line.trim();
       if (!t) return <div key={i} className="h-2 md:h-4"></div>;
 
+      // Sub-headers: Vertical bar style from screenshot
       if (t.startsWith('### ')) {
         return (
-          <h4 key={i} className="text-emerald-400 font-black text-lg md:text-2xl mt-12 mb-6 uppercase tracking-[0.2em] border-l-4 border-emerald-500/50 pl-6 shadow-[0_0_15px_rgba(52,211,153,0.1)]">
-            {processLineText(t.replace('### ', ''))}
-          </h4>
+          <div key={i} className="mt-12 mb-6">
+            <div className="flex items-center gap-0">
+              <div className="w-1.5 h-7 md:h-9 bg-emerald-500 mr-4 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+              <h4 className="text-emerald-400 font-black text-lg md:text-2xl uppercase tracking-[0.2em] drop-shadow-sm">
+                {processLineText(t.replace('### ', ''))}
+              </h4>
+            </div>
+          </div>
         );
       }
       
@@ -124,10 +130,14 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   return (
     <div className="space-y-10 md:space-y-16">
       {sections.map((section, idx) => (
-        <div key={idx} className="glass-panel p-8 md:p-20 rounded-3xl md:rounded-[4rem] border border-white/10 shadow-2xl relative overflow-hidden">
-          <h2 className="text-[14px] md:text-[18px] font-mono font-black text-indigo-300 uppercase tracking-[0.4em] mb-10 md:mb-14 border-b border-white/10 pb-5 md:pb-7 drop-shadow-[0_0_12px_rgba(129,140,248,0.4)]">
-            {section.title}
-          </h2>
+        <div key={idx} className="glass-panel p-8 md:p-16 rounded-3xl md:rounded-[3.5rem] border border-white/10 shadow-2xl relative overflow-hidden">
+          {/* Main Section Header: Double chevron style from screenshot */}
+          <div className="mb-10 md:mb-14 border-b border-white/10 pb-5 md:pb-7 flex items-center gap-4">
+             <Icons.Dive className="w-5 h-5 md:w-6 md:h-6 text-emerald-500/80 shrink-0" />
+             <h2 className="text-[14px] md:text-[18px] font-mono font-black text-emerald-400 uppercase tracking-[0.3em] drop-shadow-md">
+               {section.title}
+             </h2>
+          </div>
           <div className="prose prose-invert max-w-none">
             {renderContent(section.content, idx === 0)}
           </div>
@@ -135,12 +145,14 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       ))}
 
       {(isDiving || diveContent || diveError) && (
-        <div className="glass-panel p-8 md:p-20 rounded-3xl md:rounded-[4rem] border border-emerald-500/20 bg-emerald-500/5 shadow-inner mt-12 md:mt-20">
+        <div className="glass-panel p-8 md:p-16 rounded-3xl md:rounded-[3.5rem] border border-emerald-500/20 bg-emerald-500/5 shadow-inner mt-12 md:mt-20">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-10 md:mb-14 border-b border-white/10 pb-5 md:pb-7">
-            <h2 className="text-[14px] md:text-[18px] font-mono font-black text-emerald-400 uppercase tracking-[0.4em] flex items-center gap-4 drop-shadow-[0_0_12px_rgba(52,211,153,0.4)]">
-              <Icons.Dive className={`w-5 h-5 md:w-6 md:h-6 ${isDiving ? 'animate-bounce' : ''}`} />
-              Theological Deep Dive
-            </h2>
+            <div className="flex items-center gap-4">
+              <Icons.Dive className={`w-5 h-5 md:w-7 md:h-7 text-emerald-400 ${isDiving ? 'animate-bounce' : ''}`} />
+              <h2 className="text-[14px] md:text-[20px] font-mono font-black text-emerald-400 uppercase tracking-[0.4em] drop-shadow-[0_0_12px_rgba(52,211,153,0.4)]">
+                Theological Deep Dive
+              </h2>
+            </div>
             <span className="text-[11px] md:text-[13px] font-mono text-slate-500 uppercase tracking-[0.2em] italic md:text-right font-bold">
               {diveStatus}
             </span>
@@ -151,7 +163,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
               renderContent(diveContent)
             ) : isDiving ? (
               <div className="flex flex-col items-center justify-center py-16 md:py-24 gap-6 md:gap-8">
-                <Icons.Loader className="w-10 h-10 md:w-12 md:h-12 text-indigo-400" />
+                <Icons.Loader className="w-10 h-10 md:w-12 md:h-12 text-emerald-400" />
                 <p className="font-mono text-[12px] md:text-[14px] text-slate-500 uppercase tracking-[0.3em] font-black animate-pulse">Consulting the Archives...</p>
               </div>
             ) : diveError ? (
