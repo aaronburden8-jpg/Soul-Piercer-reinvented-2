@@ -1,14 +1,15 @@
+
 import { GoogleGenAI, Modality } from "@google/genai";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Robust text generation with automatic retries for Quota/Rate limits.
- * Upgraded to gemini-3-flash-preview for paid-tier performance.
+ * Utilizing gemini-3-pro-preview for high-quality theological reasoning.
  */
-export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
+export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-pro-preview') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  let attempts = 4;
+  let attempts = 5; 
   let lastError: any = null;
   
   while (attempts > 0) {
@@ -27,16 +28,15 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
       lastError = err;
       const errStr = String(err).toLowerCase();
       
-      // Broad check for rate limiting/quota errors
+      // broad check for rate limiting/quota errors (429)
       const isQuotaError = errStr.includes('429') || 
                            errStr.includes('quota') || 
                            errStr.includes('exhausted') || 
                            errStr.includes('limit');
 
       if (isQuotaError && attempts > 1) {
-        // Wait longer on each attempt: 3s, 6s, 9s
-        const waitTime = 3000 * (5 - attempts);
-        console.warn(`Quota limit hit. Retrying in ${waitTime}ms... (${attempts - 1} attempts left)`);
+        const waitTime = Math.pow(2, (6 - attempts)) * 1000;
+        console.warn(`[QUOTA_RECOVERY] Hit limit. Cooling down for ${waitTime}ms... (${attempts - 1} left)`);
         await sleep(waitTime);
         attempts--;
         continue;
@@ -47,7 +47,9 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
   throw lastError;
 };
 
-// Streaming theological depth upgraded to Gemini 3.0 Flash.
+/**
+ * Streaming theological depth utilizing the gemini-3-pro-preview model for expert reasoning.
+ */
 export const generateDeepDiveStream = async (content: string, onChunk: (text: string) => void) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Act as an expert theologian and historical researcher. 
@@ -65,7 +67,7 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
   
   try {
     const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-pro-preview',
       contents: [{ parts: [{ text: prompt }] }],
       config: {
         temperature: 0.7
