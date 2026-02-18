@@ -2,10 +2,14 @@ import { GoogleGenAI, Modality } from "@google/genai";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Switched to gemini-flash-latest for standard 1.5 stability and higher quota.
+/**
+ * Robust text generation with automatic retries for Quota/Rate limits.
+ * Uses gemini-flash-latest (1.5 Flash) for high stability.
+ */
 export const generateDevotionalText = async (prompt: string, model: string = 'gemini-flash-latest') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  let attempts = 3;
+  let attempts = 4;
+  let lastError: any = null;
   
   while (attempts > 0) {
     try {
@@ -20,15 +24,27 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
       });
       return response.text;
     } catch (err: any) {
-      // If we hit a quota limit, wait and retry up to 3 times
-      if (err.message?.includes('429') && attempts > 1) {
-        await sleep(2000 * (4 - attempts)); // Exponential-ish backoff
+      lastError = err;
+      const errStr = String(err).toLowerCase();
+      
+      // Broad check for rate limiting/quota errors
+      const isQuotaError = errStr.includes('429') || 
+                           errStr.includes('quota') || 
+                           errStr.includes('exhausted') || 
+                           errStr.includes('limit');
+
+      if (isQuotaError && attempts > 1) {
+        // Wait longer on each attempt: 3s, 6s, 9s
+        const waitTime = 3000 * (5 - attempts);
+        console.warn(`Quota limit hit. Retrying in ${waitTime}ms... (${attempts - 1} attempts left)`);
+        await sleep(waitTime);
         attempts--;
         continue;
       }
       throw err;
     }
   }
+  throw lastError;
 };
 
 // Streaming theological depth using the stable 1.5 Flash model.
@@ -62,7 +78,7 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
         onChunk(text);
       }
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error("Theological stream failed:", err);
     throw err;
   }

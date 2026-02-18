@@ -15,11 +15,11 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   const hasStartedDive = useRef<boolean>(false);
 
   useEffect(() => {
-    // Auto-trigger depth analysis after a short delay for smooth experience
+    // Stagger background research to avoid hitting RPS (Requests Per Second) limits
     if (!hasStartedDive.current) {
       const timer = setTimeout(() => {
         startDeepDive();
-      }, 1500);
+      }, 4000); // Increased from 1.5s to 4s for API stability
       return () => clearTimeout(timer);
     }
   }, [devotional.id]);

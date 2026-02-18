@@ -212,7 +212,7 @@ const App: React.FC = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       let msg = err.message || "An unknown error occurred.";
-      if (msg.includes('429')) msg = "Quota limit reached. The stable 1.5 engine is resetting. Please wait a moment.";
+      if (msg.includes('429')) msg = "Quota limit reached. The stable 1.5 engine is resetting and retrying. Please wait a moment.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -336,7 +336,7 @@ const App: React.FC = () => {
             <h1 className="text-3xl font-black uppercase tracking-tighter text-gradient font-serif-display leading-none">The Soul Piercer <span className="text-[14px] font-mono not-italic text-indigo-300 opacity-60 ml-2">v4.6 Sanctuary</span></h1>
             <div className="flex items-center gap-5 mt-3">
               <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-[0.3em] flex items-center gap-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div> CONNECTED_FLASH
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div> CONNECTED_1.5_STABLE
               </span>
               <div className="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
               <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-[0.3em]">MOMENTUM: {momentum}</span>
