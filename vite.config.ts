@@ -8,10 +8,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      // Senior Engineer Note: We use a dynamic expression string so that process.env.API_KEY 
-      // is evaluated at runtime in the browser, allowing the platform to inject 
-      // updated keys from the selection dialog without a re-build.
-      'process.env.API_KEY': '(globalThis.process?.env?.API_KEY || ' + JSON.stringify(env.VITE_API_KEY || env.API_KEY || "") + ')',
+      // We use JSON.stringify to ensure the value is a valid JSON string for esbuild.
+      // This correctly maps process.env.API_KEY in the source code to the environment variable.
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || env.VITE_API_KEY || ""),
     },
   };
 });
