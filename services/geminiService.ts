@@ -4,9 +4,9 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Robust text generation with automatic retries for Quota/Rate limits.
- * Uses gemini-flash-latest (1.5 Flash) for high stability.
+ * Upgraded to gemini-3-flash-preview for paid-tier performance.
  */
-export const generateDevotionalText = async (prompt: string, model: string = 'gemini-flash-latest') => {
+export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   let attempts = 4;
   let lastError: any = null;
@@ -47,7 +47,7 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
   throw lastError;
 };
 
-// Streaming theological depth using the stable 1.5 Flash model.
+// Streaming theological depth upgraded to Gemini 3.0 Flash.
 export const generateDeepDiveStream = async (content: string, onChunk: (text: string) => void) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Act as an expert theologian and historical researcher. 
@@ -65,7 +65,7 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
   
   try {
     const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: [{ parts: [{ text: prompt }] }],
       config: {
         temperature: 0.7
