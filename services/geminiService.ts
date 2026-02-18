@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Modality } from "@google/genai";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -23,20 +22,30 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
           topK: 40,
         }
       });
-      return response.text;
+      
+      const text = response.text;
+      
+      // If text is missing, it might be a safety block or an empty generation
+      if (!text) {
+        console.error("AI returned empty text. Finish Reason:", response.candidates?.[0]?.finishReason);
+        throw new Error("The Sanctuary connection was interrupted by safety filters or an empty response. Retrying...");
+      }
+
+      return text;
     } catch (err: any) {
       lastError = err;
       const errStr = String(err).toLowerCase();
       
-      // broad check for rate limiting/quota errors (429)
-      const isQuotaError = errStr.includes('429') || 
-                           errStr.includes('quota') || 
-                           errStr.includes('exhausted') || 
-                           errStr.includes('limit');
+      // broad check for rate limiting/quota errors (429) or our custom safety error
+      const isRetryable = errStr.includes('429') || 
+                          errStr.includes('quota') || 
+                          errStr.includes('exhausted') || 
+                          errStr.includes('limit') ||
+                          errStr.includes('interrupted');
 
-      if (isQuotaError && attempts > 1) {
+      if (isRetryable && attempts > 1) {
         const waitTime = Math.pow(2, (6 - attempts)) * 1000;
-        console.warn(`[QUOTA_RECOVERY] Hit limit. Cooling down for ${waitTime}ms... (${attempts - 1} left)`);
+        console.warn(`[RECOVERY] Attempt ${6 - attempts} failed. Retrying in ${waitTime}ms...`);
         await sleep(waitTime);
         attempts--;
         continue;
