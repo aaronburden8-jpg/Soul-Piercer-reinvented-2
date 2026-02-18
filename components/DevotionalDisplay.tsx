@@ -31,17 +31,19 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
     setIsExporting(true);
     try {
       const element = phantomRef.current;
-      // Temporarily remove hidden class for capture if needed, 
-      // but html2pdf can often handle detached/off-screen elements if sized correctly.
+      // We use zero margin in the library settings and rely entirely on the 
+      // container's CSS padding for 100% control over the visual 'document' edges.
       const opt = {
-        margin: [15, 15, 25, 15], // Top, Left, Bottom, Right (mm)
+        margin: 0, 
         filename: `SoulPiercer_Manuscript_${devotional.input.slice(0, 20).replace(/\s+/g, '_')}.pdf`,
         image: { type: 'jpeg', quality: 1 },
         html2canvas: { 
           scale: 2, 
           useCORS: true,
           logging: false,
-          backgroundColor: '#FFFFFF' 
+          letterRendering: true,
+          backgroundColor: '#FFFFFF',
+          width: 794, // Standard A4 pixel width at 96 DPI for better internal scaling
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
@@ -113,7 +115,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
         return (
           <div key={i} className="flex gap-4 my-2">
             <span className={isManuscript ? "text-emerald-600 mt-1" : "text-emerald-500/80 mt-2 shrink-0"}>•</span>
-            <div className={`${isManuscript ? 'text-slate-800 text-base leading-relaxed' : 'text-slate-200 text-base md:text-xl leading-relaxed'} flex-1`}>
+            <div className={`${isManuscript ? 'text-slate-800 text-base leading-relaxed break-words' : 'text-slate-200 text-base md:text-xl leading-relaxed'} flex-1`}>
               {lineContent}
             </div>
           </div>
@@ -122,7 +124,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       const processed = processLineText(t, isManuscript);
       if (!processed) return null;
       return (
-        <p key={i} className={`my-4 ${isManuscript ? 'text-slate-900 leading-relaxed text-base font-serif' : 'text-slate-100 leading-relaxed text-base md:text-xl'} ${isLarge && !isManuscript ? 'font-serif-display italic md:text-2xl' : ''} ${isLarge && isManuscript ? 'text-lg italic border-l-4 border-emerald-500 pl-6 my-8 py-2' : ''}`}>
+        <p key={i} className={`my-4 break-words ${isManuscript ? 'text-slate-900 leading-relaxed text-[11pt] font-serif text-justify' : 'text-slate-100 leading-relaxed text-base md:text-xl'} ${isLarge && !isManuscript ? 'font-serif-display italic md:text-2xl' : ''} ${isLarge && isManuscript ? 'text-lg italic border-l-4 border-emerald-500 pl-6 my-8 py-2' : ''}`}>
           {processed}
         </p>
       );
@@ -199,23 +201,23 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
         <div 
           ref={phantomRef} 
           className="bg-white text-slate-900 font-serif"
-          style={{ width: '210mm', padding: '25mm', boxSizing: 'border-box' }}
+          style={{ width: '210mm', minHeight: '297mm', padding: '30mm 25mm', boxSizing: 'border-box', overflow: 'hidden' }}
         >
           {/* Header */}
           <div className="border-b-2 border-emerald-600 pb-8 mb-12 flex justify-between items-end">
             <div>
               <h1 className="text-4xl font-serif-display font-black text-emerald-700 uppercase tracking-tighter mb-2">Soul Piercer</h1>
-              <p className="text-slate-500 font-mono text-[10px] uppercase tracking-[0.4em]">Spiritual Sharpening Tool • Manuscript Format</p>
+              <p className="text-slate-500 font-mono text-[9px] uppercase tracking-[0.4em]">Spiritual Sharpening Tool • Manuscript Format</p>
             </div>
             <div className="text-right">
-              <p className="text-emerald-800 font-bold uppercase tracking-widest text-xs">Series Day {devotional.seriesDay || 1}</p>
-              <p className="text-slate-400 font-mono text-[10px]">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p className="text-emerald-800 font-bold uppercase tracking-widest text-xs">Session {devotional.seriesDay || 1}</p>
+              <p className="text-slate-400 font-mono text-[9px]">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </div>
           </div>
 
           <div className="mb-12">
-             <p className="text-slate-400 font-mono text-[10px] uppercase tracking-widest mb-2">Focus Topic:</p>
-             <h2 className="text-3xl font-serif-display italic font-bold text-slate-900 border-l-4 border-emerald-500 pl-6 py-2">{devotional.input || "Untitled Meditation"}</h2>
+             <p className="text-slate-400 font-mono text-[9px] uppercase tracking-widest mb-2">Focus Topic:</p>
+             <h2 className="text-3xl font-serif-display italic font-bold text-slate-900 border-l-4 border-emerald-500 pl-6 py-2 leading-tight">{devotional.input || "Untitled Meditation"}</h2>
           </div>
 
           {/* Sections */}
@@ -224,7 +226,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
               <div key={idx} className="page-break-avoid">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-4 h-1 bg-emerald-600"></div>
-                  <h3 className="font-mono font-black text-emerald-700 uppercase tracking-[0.2em] text-sm">
+                  <h3 className="font-mono font-black text-emerald-700 uppercase tracking-[0.2em] text-xs">
                     {section.title}
                   </h3>
                 </div>
@@ -238,7 +240,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
               <div className="mt-16 pt-16 border-t border-slate-100 page-break-avoid">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-4 h-1 bg-slate-900"></div>
-                  <h3 className="font-mono font-black text-slate-900 uppercase tracking-[0.2em] text-sm">
+                  <h3 className="font-mono font-black text-slate-900 uppercase tracking-[0.2em] text-xs">
                     Theological Deep Dive Supplement
                   </h3>
                 </div>
@@ -250,9 +252,9 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           </div>
 
           {/* Footer */}
-          <div className="mt-20 pt-8 border-t border-slate-100 flex justify-between items-center text-slate-400 font-mono text-[9px] uppercase tracking-widest">
+          <div className="mt-20 pt-8 border-t border-slate-100 flex justify-between items-center text-slate-400 font-mono text-[8px] uppercase tracking-widest">
             <span>&copy; {new Date().getFullYear()} The Soul Piercer Sanctuary</span>
-            <span>Ref: {devotional.id}</span>
+            <span>ID: {devotional.id.split('_')[1] || devotional.id}</span>
             <span>Typeset by Gemini 3 Pro</span>
           </div>
         </div>
