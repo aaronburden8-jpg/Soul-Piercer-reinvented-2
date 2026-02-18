@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Devotional, DevotionalSection } from '../types';
 import { Icons } from '../constants';
@@ -12,7 +11,19 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   const [diveContent, setDiveContent] = useState<string>("");
   const [isDiving, setIsDiving] = useState(false);
   const [diveStatus, setDiveStatus] = useState<string>("");
+  const [diveError, setDiveError] = useState<boolean>(false);
   const diveEndRef = useRef<HTMLDivElement>(null);
+  const hasStartedDive = useRef<boolean>(false);
+
+  useEffect(() => {
+    // Auto-trigger depth analysis after a short delay for smooth experience
+    if (!hasStartedDive.current) {
+      const timer = setTimeout(() => {
+        startDeepDive();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [devotional.id]);
 
   useEffect(() => {
     if (isDiving && diveEndRef.current) {
@@ -22,14 +33,12 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
 
   const parseSections = (markdown: string): DevotionalSection[] => {
     if (!markdown) return [];
-    // Split by ### headers
     const parts = markdown.split(/^###\s+(.+)$/gm);
     const sections: DevotionalSection[] = [];
     
-    // The very first part might be text BEFORE any header (e.g. a preamble)
     const firstPart = parts[0].trim();
     if (firstPart) {
-      sections.push({ title: "Analysis Introduction", content: firstPart });
+      sections.push({ title: "Foundational Insight", content: firstPart });
     }
 
     for (let i = 1; i < parts.length; i += 2) {
@@ -45,7 +54,6 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
 
   const processLineText = (text: string) => {
     if (!text) return "";
-    // Clean text and handle basic formatting
     const sanitized = text.replace(/—/g, ' - ').replace(/--/g, ' - ');
     const parts = sanitized.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
@@ -85,37 +93,23 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   };
 
   const startDeepDive = async () => {
-    if (isDiving) return;
+    if (hasStartedDive.current) return;
+    hasStartedDive.current = true;
     setIsDiving(true);
+    setDiveError(false);
     setDiveContent("");
-    setDiveStatus("Connecting to Archive...");
+    setDiveStatus("Synthesizing Theological Context...");
     
-    const statuses = [
-      "Accessing Historical Archives...",
-      "Analyzing Etymological Roots...",
-      "Mapping Archetypal Patterns...",
-      "Decoding Theological Layers...",
-      "Synthesizing Strategic Insights..."
-    ];
-    
-    let statusIdx = 0;
-    const statusInterval = setInterval(() => {
-      setDiveStatus(statuses[statusIdx % statuses.length]);
-      statusIdx++;
-    }, 4000);
-
     try {
       await generateDeepDiveStream(devotional.content, (chunk) => {
         setDiveContent(prev => prev + chunk);
-        if (statusInterval) clearInterval(statusInterval);
         setDiveStatus("Receiving Transmission...");
       });
     } catch (err: any) {
-      console.error("Deep dive error:", err);
-      setDiveStatus(`Research Error: ${err.message || 'System fault'}`);
-      setTimeout(() => setDiveStatus(""), 5000);
+      console.error("Theological stream error:", err);
+      setDiveError(true);
+      setDiveStatus("Research connection interrupted.");
     } finally {
-      if (statusInterval) clearInterval(statusInterval);
       setIsDiving(false);
     }
   };
@@ -159,8 +153,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           </div>
         );
 
-      case title.toLowerCase().includes('story'):
-      case title.toLowerCase().includes('reflection'):
+      case title.toLowerCase().includes('story') || title.toLowerCase().includes('reflection'):
         return (
           <div key={title} className="mb-24 animate-slide-up" style={{ animationDelay: delay }}>
             <div className="flex flex-col items-center gap-6 mb-12">
@@ -256,40 +249,34 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
         </div>
 
         <div className="mt-40 pt-20 border-t border-white/5 max-w-4xl mx-auto">
-          {!diveContent && !isDiving && (
-            <button 
-              onClick={startDeepDive}
-              className="w-full py-12 rounded-[4rem] bg-white/5 border border-white/10 text-white font-mono text-[13px] tracking-[0.7em] uppercase hover:bg-white/10 transition-all flex items-center justify-center gap-6"
-            >
-              <Icons.Dive className="w-6 h-6" /> SEEK THEOLOGICAL DEPTH
-            </button>
-          )}
+          <div className="flex items-center gap-6 mb-12">
+            <div className={`w-3 h-3 rounded-full ${isDiving ? 'bg-indigo-500 animate-pulse' : 'bg-slate-700'}`}></div>
+            <h3 className="text-slate-500 font-mono text-[10px] tracking-[0.5em] uppercase font-bold">
+              {isDiving ? diveStatus : "Optional Additional Theological Context"}
+            </h3>
+            {diveError && (
+              <button 
+                onClick={() => { hasStartedDive.current = false; startDeepDive(); }}
+                className="ml-auto text-indigo-400 font-mono text-[10px] uppercase tracking-widest hover:text-white transition-colors"
+              >
+                [Retry Synthesis]
+              </button>
+            )}
+          </div>
 
-          {isDiving && (
-            <div className="flex flex-col items-center gap-8 py-20 animate-pulse">
-               <Icons.Loader className="w-12 h-12 text-indigo-400" />
-               <div className="text-center">
-                 <p className="text-indigo-300 font-mono text-[12px] uppercase tracking-[0.4em] mb-2">{diveStatus}</p>
-                 <p className="text-slate-500 text-[10px] uppercase tracking-[0.2em]">The deep intelligence is processing layers of sacred wisdom...</p>
-               </div>
+          {isDiving && !diveContent && (
+            <div className="flex flex-col items-center gap-8 py-20 opacity-50">
+               <Icons.Loader className="w-10 h-10 text-slate-400" />
             </div>
           )}
 
           {diveContent && (
-            <div className="mt-16 bg-slate-900/60 p-16 rounded-[4.5rem] border border-white/5 animate-slide-up shadow-2xl relative overflow-hidden backdrop-blur-3xl">
-              <div className="flex items-center gap-4 mb-12">
-                <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
-                  <Icons.Dive className="w-5 h-5 text-indigo-400" />
-                </div>
-                <h3 className="text-indigo-400 font-mono text-[10px] tracking-[0.5em] uppercase font-bold">Research Portal Active</h3>
-                {isDiving && <Icons.Loader className="w-4 h-4 text-indigo-400 animate-spin ml-auto" />}
-              </div>
-              
+            <div className="bg-slate-900/40 p-12 md:p-16 rounded-[4.5rem] border border-white/5 animate-slide-up shadow-2xl backdrop-blur-3xl">
               <div className="text-left text-slate-100 transition-all">
                 {diveSections.map((section, i) => (
                    <div key={i} className="mb-12 last:mb-0">
                       <h4 className="text-indigo-200 font-serif-display text-2xl italic mb-6 border-b border-indigo-500/10 pb-4">{section.title}</h4>
-                      <div className="prose prose-invert max-w-none">
+                      <div className="text-slate-300">
                         {renderContent(section.content)}
                       </div>
                    </div>

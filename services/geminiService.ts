@@ -1,12 +1,11 @@
-
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// Using gemini-3-flash-preview for Basic Text Tasks like devotional generation to ensure high quality and speed.
+// Standardized on gemini-3-flash-preview for speed and reliability.
 export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model,
-    contents: prompt,
+    contents: [{ parts: [{ text: prompt }] }],
     config: {
       temperature: 0.8,
       topP: 0.95,
@@ -16,12 +15,11 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
   return response.text;
 };
 
-// Streaming version of the deep dive for better performance and user feedback.
-// Fixed: Explicitly disabling thinking budget to ensure faster response times and avoid 'thinking' related blocks.
+// Streaming theological depth using the same stable model.
 export const generateDeepDiveStream = async (content: string, onChunk: (text: string) => void) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Act as an expert theologian and historical researcher. 
-  Perform a Theological and Historical Deep Dive on the following briefing. 
+  Perform an Optional Additional Theological Context analysis on the following briefing. 
   
   Focus on: 
   1. Original language (Greek/Hebrew) insights.
@@ -33,51 +31,27 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
 
   Format: Clear headers (###), bullet points. No em-dashes. Be concise but profound.`;
   
-  const responseStream = await ai.models.generateContentStream({
-    model: 'gemini-3-pro-preview',
-    contents: [{ parts: [{ text: prompt }] }],
-    config: {
-      temperature: 0.7,
-      // Disabling thinking to maximize streaming speed and avoid the response being empty or delayed
-      thinkingConfig: { thinkingBudget: 0 }
-    }
-  });
+  try {
+    const responseStream = await ai.models.generateContentStream({
+      model: 'gemini-3-flash-preview',
+      contents: [{ parts: [{ text: prompt }] }],
+      config: {
+        temperature: 0.7
+      }
+    });
 
-  for await (const chunk of responseStream) {
-    const text = chunk.text;
-    if (text) {
-      onChunk(text);
+    for await (const chunk of responseStream) {
+      const text = chunk.text;
+      if (text) {
+        onChunk(text);
+      }
     }
+  } catch (err) {
+    console.error("Theological stream failed:", err);
+    throw err;
   }
 };
 
-// Keeping original as fallback if needed.
-export const generateDeepDive = async (content: string) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Act as an expert theologian and historical researcher. 
-  Perform a Theological and Historical Deep Dive on the following briefing. 
-  
-  Focus on: 
-  1. Original language (Greek/Hebrew) insights.
-  2. Historical context.
-  3. Biblical archetypes.
-  
-  BRIEFING CONTENT:
-  ${content}
-
-  Format: Clear headers, bullet points. No em-dashes.`;
-  
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
-    contents: [{ parts: [{ text: prompt }] }],
-    config: {
-        thinkingConfig: { thinkingBudget: 0 }
-    }
-  });
-  return response.text;
-};
-
-// Generates audio using the specialized gemini-2.5-flash-preview-tts model for high-quality speech.
 export const generateAudio = async (text: string) => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -102,7 +76,6 @@ export const generateAudio = async (text: string) => {
   }
 };
 
-// Decodes a base64 string into a Uint8Array.
 export const decodeBase64Audio = (base64: string) => {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -113,7 +86,6 @@ export const decodeBase64Audio = (base64: string) => {
   return bytes;
 };
 
-// Decodes raw PCM audio data into an AudioBuffer.
 export const decodeAudioData = async (
   data: Uint8Array,
   ctx: AudioContext,
@@ -133,7 +105,6 @@ export const decodeAudioData = async (
   return buffer;
 };
 
-// Helper function to play an audio buffer through the destination.
 export const playAudioBuffer = async (data: Uint8Array, audioCtx: AudioContext) => {
   const buffer = await decodeAudioData(data, audioCtx, 24000, 1);
   const source = audioCtx.createBufferSource();
