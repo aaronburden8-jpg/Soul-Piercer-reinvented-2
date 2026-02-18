@@ -90,10 +90,11 @@ const App: React.FC = () => {
 
     const scripturePriorityLogic = `
       SCRIPTURE ANCHORING:
-      - If the TOPIC includes a Biblical reference (e.g., 'Psalm 23', 'Revelation 2'), you MUST anchor the entire devotional to that text.
-      - THE WORD: Provide the Reference + a short 1-sentence paraphrase of a random verse from that chapter.
-      - INTEGRATION: THE STORY and BIBLICAL REFLECTION must specifically interpret and apply that provided scripture through the current Path/Mode.
-      - FALLBACK: If no scripture is provided, use an OT/NT pair relevant to the topic.
+      - THE WORD: You MUST provide EXACTLY TWO relevant scripture verses, each on its own line. 
+      - CITATION FORMAT: For each verse, write the full scripture text first, and place the citation (Book Chapter:Verse) at the very end of the verse (e.g., 'For God so loved the world that he gave his only Son. John 3:16'). 
+      - NEVER place the citation at the beginning of the text.
+      - If the TOPIC includes a specific Biblical reference, anchor to that first, then add one additional supporting verse. Otherwise, provide a relevant pair (e.g., one Old Testament and one New Testament).
+      - INTEGRATION: THE STORY and BIBLICAL REFLECTION must specifically interpret and apply the provided scriptures.
     `;
     
     let personaPrompt = `ACT AS: A world-class spiritual guide and mentor. 
@@ -112,7 +113,7 @@ const App: React.FC = () => {
       SPECIFIC FOCUS: Pivot from "waiting room" to "throne room" theology. Validate the completeness of the individual (100% whole right now). Focus on undivided Kingdom devotion.
       SECTION REQUIREMENTS:
       - PREAMBLE: 150 words on the weight of being undivided.
-      - THE WORD: Scriptures on identity and undivided heart.
+      - THE WORD: Exactly two scriptures on identity and undivided heart with citations at the end.
       - THE STORY: 200-300 words on solo agency/freedom. No clichés.
       - BIBLICAL REFLECTION: 200-300 words on Christ-centered Completeness.
       - THE EXCHANGE: 2 sharp mirror questions on Kingdom risk.
