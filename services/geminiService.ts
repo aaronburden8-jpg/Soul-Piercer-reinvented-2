@@ -1,21 +1,37 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// Standardized on gemini-3-flash-preview for speed and reliability.
-export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Switched to gemini-flash-latest for standard 1.5 stability and higher quota.
+export const generateDevotionalText = async (prompt: string, model: string = 'gemini-flash-latest') => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const response = await ai.models.generateContent({
-    model,
-    contents: [{ parts: [{ text: prompt }] }],
-    config: {
-      temperature: 0.8,
-      topP: 0.95,
-      topK: 40,
+  let attempts = 3;
+  
+  while (attempts > 0) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: [{ parts: [{ text: prompt }] }],
+        config: {
+          temperature: 0.8,
+          topP: 0.95,
+          topK: 40,
+        }
+      });
+      return response.text;
+    } catch (err: any) {
+      // If we hit a quota limit, wait and retry up to 3 times
+      if (err.message?.includes('429') && attempts > 1) {
+        await sleep(2000 * (4 - attempts)); // Exponential-ish backoff
+        attempts--;
+        continue;
+      }
+      throw err;
     }
-  });
-  return response.text;
+  }
 };
 
-// Streaming theological depth using the same stable model.
+// Streaming theological depth using the stable 1.5 Flash model.
 export const generateDeepDiveStream = async (content: string, onChunk: (text: string) => void) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const prompt = `Act as an expert theologian and historical researcher. 
@@ -33,7 +49,7 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
   
   try {
     const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-flash-latest',
       contents: [{ parts: [{ text: prompt }] }],
       config: {
         temperature: 0.7
