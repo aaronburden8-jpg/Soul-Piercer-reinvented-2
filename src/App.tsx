@@ -223,10 +223,7 @@ const App: React.FC = () => {
     const isActive = selectedLens === l || activeSeries?.lens === l;
     return (
       <Tooltip key={l} text={LENS_CONFIG[l].description}>
-        <button 
-          onClick={() => { setSelectedLens(l); textAreaRef.current?.focus(); }}
-          className={`w-full flex flex-col items-center gap-4 p-6 rounded-3xl border transition-all ${isActive ? 'bg-emerald-500 border-emerald-400 text-white shadow-xl' : 'bg-white/5 border-white/5 text-slate-400 hover:text-slate-200'}`}
-        >
+        <button onClick={() => { setSelectedLens(prev => prev === l ? 'NON' : l); textAreaRef.current?.focus(); }}>
           <IconComp className={`w-8 h-8 ${isActive ? 'text-white' : 'opacity-30'}`} />
           <span className="text-[11px] font-black uppercase tracking-widest">{l}</span>
         </button>
