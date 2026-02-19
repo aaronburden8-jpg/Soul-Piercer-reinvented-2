@@ -33,28 +33,36 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   const downloadPdf = async () => {
     if (!phantomRef.current) return;
     setIsExporting(true);
+
     try {
       const element = phantomRef.current;
-      // Force the background to be dark and text to be white
-      element.style.backgroundColor = "#020617";
-      element.style.color = "#f8fafc";
-      const opt = {
-        margin: 0, 
-        filename: `SoulPiercer_Manuscript_${devotional.input.slice(0, 20).replace(/\s+/g, '_')}.pdf`,
-        image: { type: 'jpeg' as const, quality: 1 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true,
-          logging: false,
-          letterRendering: true,
-          backgroundColor: '#020617', // Matches your new Deep Midnight theme
-          width: 794,
-        },
-        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] as any }
-      };
       
+      // 1. SAVE ORIGINAL LOOK
+      const originalBg = element.style.backgroundColor;
+      const originalColor = element.style.color;
+      const originalFont = element.style.fontFamily; // Save the cool font
+      
+      // 2. SWITCH TO "PRINTER MODE"
+      element.style.backgroundColor = "#ffffff";     // White Paper
+      element.style.color = "#000000";               // Black Ink
+      element.style.fontFamily = "Arial, sans-serif"; // Force Arial (Fixes Alien Text)
+      
+      const opt = {
+        margin: 0.5,
+        filename: `SoulPiercer_Manuscript_${devotional.input.slice(0, 10).replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      // 3. GENERATE PDF
       await html2pdf().set(opt).from(element).save();
+      
+      // 4. RESTORE ORIGINAL LOOK
+      element.style.backgroundColor = originalBg;
+      element.style.color = originalColor;
+      element.style.fontFamily = originalFont;       // Put the cool font back
+
     } catch (e) {
       console.error(e);
       window.print();
