@@ -18,7 +18,7 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
     try {
       const response = await ai.models.generateContent({
         model,
-        contents: [{ parts: [{ text: prompt }] }],
+        contents: prompt,
         config: {
           temperature: 0.8,
           topP: 0.95,
@@ -58,7 +58,7 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
   try {
     const responseStream = await ai.models.generateContentStream({
       model: 'gemini-3-pro-preview',
-      contents: [{ parts: [{ text: prompt }] }],
+      contents: prompt,
     });
 
     for await (const chunk of responseStream) {
@@ -70,6 +70,37 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
     if (errStr.includes('429') || errStr.includes('quota')) {
        console.warn("[QUOTA] Deep dive stream hit rate limit.");
     }
+    throw err;
+  }
+};
+
+export const generateSpeech = async (text: string, voice: string = 'Kore') => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) throw new Error("Sanctuary Key missing.");
+
+  const ai = new GoogleGenAI({ apiKey });
+  
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-preview-tts",
+      contents: `Read this devotional with a soulful, peaceful, and reverent tone: ${text}`,
+      config: {
+        responseModalities: [Modality.AUDIO],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: voice },
+          },
+        },
+      },
+    });
+
+    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (base64Audio) {
+      return `data:audio/wav;base64,${base64Audio}`;
+    }
+    throw new Error("No audio data received.");
+  } catch (err: any) {
+    console.error("TTS Error:", err);
     throw err;
   }
 };
