@@ -86,7 +86,7 @@ const App: React.FC = () => {
       try {
         const parsed = JSON.parse(savedSeries);
         setActiveSeries(parsed);
-        setSelectedLens(parsed.lens);
+        //setSelectedLens(parsed.lens);
         setFocus(parsed.focus);
       } catch (e) {
         localStorage.removeItem('soul_piercer_active_series');
