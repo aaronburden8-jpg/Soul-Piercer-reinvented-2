@@ -1,16 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif-display: "Playfair Display", serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-*: initial; 
+
+  /* The Sanctuary Palette - Stable HEX Versions */
+  --color-background: #020617; /* Deepest Midnight */
+  --color-surface: #1e293b;    /* Slate Gray for cards */
+  --color-primary: #10b981;    /* Vibrant Emerald for 'Seek Guidance' */
+  --color-secondary: #6366f1;  /* Indigo for buttons */
+  --color-accent: #f59e0b;     /* Amber for icons */
+  --color-text: #f8fafc;       /* Clean white text */
+  --color-muted: #94a3b8;      /* Soft gray for subtext */
+  
+  /* Adding these back ensures the buttons aren't invisible */
+  --color-slate-800: #1e293b;
+  --color-emerald-500: #10b981;
 }
 
 :root {
   --app-bg: #1e293b;
   --accent: #a5b4fc;
   --emerald: #6ee7b7;
-  --panel-bg: rgba(255, 255, 255, 0.03);
 }
 
 body {

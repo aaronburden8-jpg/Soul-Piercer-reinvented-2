@@ -35,6 +35,9 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
     setIsExporting(true);
     try {
       const element = phantomRef.current;
+      // Force the background to be dark and text to be white
+      element.style.backgroundColor = "#020617";
+      element.style.color = "#f8fafc";
       const opt = {
         margin: 0, 
         filename: `SoulPiercer_Manuscript_${devotional.input.slice(0, 20).replace(/\s+/g, '_')}.pdf`,
@@ -44,7 +47,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           useCORS: true,
           logging: false,
           letterRendering: true,
-          backgroundColor: '#FFFFFF',
+          backgroundColor: '#020617', // Matches your new Deep Midnight theme
           width: 794,
         },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
