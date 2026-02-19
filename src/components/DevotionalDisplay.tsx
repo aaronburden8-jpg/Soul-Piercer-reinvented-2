@@ -51,7 +51,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
         margin: 0.5,
         filename: `SoulPiercer_Manuscript_${devotional.input.slice(0, 10).replace(/\s+/g, '_')}.pdf`,
         image: { 
-          type: 'jpeg' as const, // The "as const" makes TypeScript happy
+          type: 'jpeg' as const, 
           quality: 0.98 
         },
         html2canvas: { 
@@ -60,7 +60,11 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
             backgroundColor: '#ffffff',
             letterRendering: true 
         },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        jsPDF: { 
+          unit: 'in', 
+          format: 'letter', 
+          orientation: 'portrait' as const 
+        }
       };
 
       // 3. GENERATE PDF
