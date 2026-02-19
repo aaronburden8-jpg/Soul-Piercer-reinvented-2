@@ -60,7 +60,7 @@ const App: React.FC = () => {
   const [mode, setMode] = useState<'glimpse' | 'journey'>('glimpse');
   const [journeyDays, setJourneyDays] = useState(7);
   const [focus, setFocus] = useState<SpiritualFocus>('non-denominational');
-  const [selectedLens, setSelectedLens] = useState<TacticalLens>(TacticalLens.EXPLORER);
+  const [selectedLens, setSelectedLens] = useState<TacticalLens | 'NON'>(TacticalLens.EXPLORER);
   const [activeSeries, setActiveSeries] = useState<ActiveSeries | null>(null);
   const [hasKey, setHasKey] = useState(true);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
