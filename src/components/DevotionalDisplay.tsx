@@ -50,8 +50,16 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
       const opt = {
         margin: 0.5,
         filename: `SoulPiercer_Manuscript_${devotional.input.slice(0, 10).replace(/\s+/g, '_')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        image: { 
+          type: 'jpeg' as const, // The "as const" makes TypeScript happy
+          quality: 0.98 
+        },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            backgroundColor: '#ffffff',
+            letterRendering: true 
+        },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
       };
 
