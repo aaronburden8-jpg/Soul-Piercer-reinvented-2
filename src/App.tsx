@@ -126,8 +126,10 @@ const App: React.FC = () => {
       ### THE STORY
       ### BIBLICAL REFLECTION
       ### THE EXCHANGE
+      (FORMAT: You MUST use a bulleted list. Each item MUST start with a bolded "From/To" transition, followed by a colon, then the explanation.)
       ### THE PRAYER
-      ### KEY THOUGHTS`;
+      ### KEY THOUGHTS
+      (FORMAT: You MUST use a bulleted list. Each item MUST start with a bolded key concept, followed by a colon, then the explanation.)`;
   };
 
   const handleGenerate = async (seriesContext?: ActiveSeries) => {

@@ -184,7 +184,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
                  {section.title}
                </h2>
             </div>
-            <div className="markdown-body prose prose-invert max-w-none prose-p:text-slate-100 prose-p:text-lg md:prose-p:text-xl prose-p:leading-relaxed prose-headings:text-emerald-400 prose-strong:text-white prose-em:text-emerald-200">
+            <div className="markdown-body prose prose-invert max-w-none prose-p:text-slate-100 prose-p:text-lg md:prose-p:text-xl prose-p:leading-relaxed prose-headings:text-emerald-400 prose-headings:font-black prose-headings:uppercase prose-headings:tracking-[0.2em]">
               <Markdown>{section.content}</Markdown>
             </div>
           </motion.div>
@@ -203,7 +203,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
                   Theological Deep Dive
                 </h2>
               </div>
-              <div className="markdown-body prose prose-invert max-w-none prose-p:text-slate-100 prose-p:text-lg md:prose-p:text-xl prose-p:leading-relaxed prose-headings:text-emerald-400 prose-strong:text-white prose-em:text-emerald-200">
+              <div className="markdown-body prose prose-invert max-w-none prose-p:text-slate-100 prose-p:text-lg md:prose-p:text-xl prose-p:leading-relaxed prose-headings:text-emerald-400 prose-headings:font-black prose-headings:uppercase prose-headings:tracking-[0.2em]">
                 {diveContent ? <Markdown>{diveContent}</Markdown> : (
                   <div className="flex flex-col items-center py-10 gap-4 no-print">
                     <Icons.Loader className="w-10 h-10 text-emerald-400 animate-spin" />
@@ -250,7 +250,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
                     {section.title}
                   </h3>
                 </div>
-                <div className="text-slate-900 prose prose-slate max-w-none prose-p:break-inside-avoid">
+                <div className="text-slate-900 prose prose-slate max-w-none prose-p:break-inside-avoid prose-strong:text-emerald-800 prose-strong:font-bold">
                   <Markdown>{section.content}</Markdown>
                 </div>
               </div>
@@ -264,7 +264,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
                     Theological Deep Dive Supplement
                   </h3>
                 </div>
-                <div className="text-slate-800 prose prose-slate max-w-none prose-p:break-inside-avoid">
+                <div className="text-slate-800 prose prose-slate max-w-none prose-p:break-inside-avoid prose-strong:text-emerald-800 prose-strong:font-bold">
                   <Markdown>{diveContent}</Markdown>
                 </div>
               </div>
