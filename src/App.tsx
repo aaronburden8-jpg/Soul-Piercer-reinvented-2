@@ -109,10 +109,16 @@ const App: React.FC = () => {
     let personaPrompt = `ACT AS: A spiritual guide. TONE: Soulful.`;
     let theologyConstraint = "";
 
-    if (focusType !== 'theosophist') {
+    if (focusType === 'catholic') {
+      theologyConstraint = `
+      THEOLOGICAL FOCUS: Strictly Christ-Centered with Catholic nuances. Center every reflection on the Person and Work of Jesus Christ. 
+      CRITICAL GUARDRAIL: DO NOT use esoteric or universalist terms. 
+      PRAYER ADDRESSES: Use traditional biblical addresses such as "Heavenly Father", "Lord Jesus", or "Holy Spirit". 
+      The core message must reflect the Gospel of grace through Christ alone, while acknowledging the richness of the Catholic tradition in its devotion to the Sacred Heart and the Eucharist where appropriate.`;
+    } else if (focusType === 'non-denominational') {
       theologyConstraint = `
       THEOLOGICAL FOCUS: Strictly Christ-Centered. Center every reflection on the Person and Work of Jesus Christ. 
-      CRITICAL GUARDRAIL: DO NOT use esoteric or universalist terms like "Piercing Spirit" or "Father of Lights" to address God in the prayer section. 
+      CRITICAL GUARDRAIL: DO NOT use esoteric or universalist terms. 
       PRAYER ADDRESSES: Use traditional biblical addresses such as "Heavenly Father", "Lord Jesus", or "Holy Spirit". 
       The core message must reflect the Gospel of grace through Christ alone.`;
     } else {
@@ -255,15 +261,28 @@ const App: React.FC = () => {
         </div>
 
         <div className="flex gap-2 p-1.5 bg-black/20 rounded-2xl mt-6 md:mt-0">
-          {(['non-denominational', 'catholic', 'theosophist'] as SpiritualFocus[]).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFocus(f)}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${focus === f ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-            >
-              {f.split('-')[0]}
-            </button>
-          ))}
+          {(['non-denominational', 'catholic', 'theosophist'] as SpiritualFocus[]).map((f) => {
+            const labels: Record<SpiritualFocus, string> = {
+              'non-denominational': 'NON-DENON',
+              'catholic': 'CATHOLIC',
+              'theosophist': 'THEOSOPHIST'
+            };
+            const tooltips: Record<SpiritualFocus, string> = {
+              'non-denominational': 'Return a Christ-centered, non-denominational response.',
+              'catholic': 'Return a Christ-centered, Catholic response.',
+              'theosophist': 'Return a Theosophist response.'
+            };
+            return (
+              <Tooltip key={f} text={tooltips[f]}>
+                <button
+                  onClick={() => setFocus(f)}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${focus === f ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  {labels[f]}
+                </button>
+              </Tooltip>
+            );
+          })}
         </div>
       </motion.header>
 
