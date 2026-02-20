@@ -60,7 +60,7 @@ const App: React.FC = () => {
   const [mode, setMode] = useState<'glimpse' | 'journey'>('glimpse');
   const [journeyDays, setJourneyDays] = useState(7);
   const [focus, setFocus] = useState<SpiritualFocus>('non-denominational');
-  const [selectedLens, setSelectedLens] = useState<TacticalLens>(TacticalLens.EXPLORER);
+  const [selectedLens, setSelectedLens] = useState<TacticalLens>(TacticalLens.WILDERNESS);
   const [activeSeries, setActiveSeries] = useState<ActiveSeries | null>(null);
   const [hasKey, setHasKey] = useState(true);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -125,7 +125,35 @@ const App: React.FC = () => {
       theologyConstraint = `THEOLOGICAL FOCUS: Theosophist/Esoteric. You may use universalist language and terms like "Father of Lights" or "Great Spirit".`;
     }
 
-    return `${personaPrompt} ${theologyConstraint} ${baseConstraint} 
+    let lensConstraint = "";
+    switch(lens) {
+      case TacticalLens.EXPLORER:
+        lensConstraint = "LENS: Explorer. Focus on discovery, broad biblical horizons, and opening new doors of meditation.";
+        break;
+      case TacticalLens.STRATEGIST:
+        lensConstraint = "LENS: Strategist. Focus on scriptural wisdom for overcoming obstacles and practical spiritual warfare.";
+        break;
+      case TacticalLens.ARCHITECT:
+        lensConstraint = "LENS: Architect. Focus on building life on the solid foundation of Christ and structural spiritual growth.";
+        break;
+      case TacticalLens.HEALER:
+        lensConstraint = "LENS: Healer. Focus on restoration, comfort, and emotional alignment in the Word.";
+        break;
+      case TacticalLens.WILDERNESS:
+        lensConstraint = "LENS: Wilderness. Surrender to the Spirit. Provide a unique, raw, and unpredictably generated meditation that feels like a voice in the desert.";
+        break;
+      case TacticalLens.MARRIAGE:
+        lensConstraint = "LENS: Marriage. Focus on the covenant of marriage. Write as if a couple is reading this together. Use 'we', 'us', and 'our' in the reflections and prayer. Address the specific dynamics of unity, love, and shared spiritual growth.";
+        break;
+      case TacticalLens.WHOLEHEART:
+        lensConstraint = "LENS: Wholeheart. Focus on the season of singleness. Provide encouragement, purpose, and strength for an undivided heart. Address the unique beauty and challenges of being single with a focus on wholeness in Christ.";
+        break;
+      case TacticalLens.LENT:
+        lensConstraint = "LENS: Lent. Focus on liturgical sharpening, repentance, and walking the covenant through the 40-day journey to the Cross.";
+        break;
+    }
+
+    return `${personaPrompt} ${theologyConstraint} ${lensConstraint} ${baseConstraint} 
       OUTPUT STRUCTURE:
       ### Preamble
       ### THE WORD
@@ -218,7 +246,7 @@ const App: React.FC = () => {
     localStorage.removeItem('soul_piercer_active_series');
     setActiveSeries(null);
     setDevotional(null);
-    setSelectedLens(TacticalLens.EXPLORER);
+    setSelectedLens(TacticalLens.WILDERNESS);
     setMode('glimpse');
     setFocus('non-denominational');
     setInput("");
@@ -226,14 +254,49 @@ const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleLensSelect = (l: TacticalLens) => {
+    if (selectedLens === l) {
+      // If already selected, we "reset" to Wilderness as the neutral default
+      setSelectedLens(TacticalLens.WILDERNESS);
+      if (l === TacticalLens.LENT) {
+        setFocus('non-denominational');
+        setMode('glimpse');
+      }
+      // If they click the lens that is part of an active series, we ask if they want to clear it
+      // For now, we'll just allow them to switch selectedLens away from it.
+    } else {
+      setSelectedLens(l);
+      if (l === TacticalLens.LENT) {
+        setFocus('catholic');
+        setMode('journey');
+        setJourneyDays(40);
+      }
+    }
+    textAreaRef.current?.focus();
+  };
+
   const renderPathButton = (l: TacticalLens) => {
     const IconComp = LENS_CONFIG[l].icon;
-    const isActive = selectedLens === l || activeSeries?.lens === l;
+    const isSelected = selectedLens === l;
+    const isSeriesLens = activeSeries?.lens === l;
+    
     return (
       <Tooltip key={l} text={LENS_CONFIG[l].description}>
-        <button onClick={() => { setSelectedLens((selectedLens === l ? 'NON' : l) as unknown as TacticalLens); textAreaRef.current?.focus(); }}>
-          <IconComp className={`w-8 h-8 ${isActive ? 'text-white' : 'opacity-30'}`} />
-          <span className="text-[11px] font-black uppercase tracking-widest">{l}</span>
+        <button 
+          onClick={() => handleLensSelect(l)}
+          className="flex flex-col items-center gap-2 group relative"
+        >
+          <div className={`p-4 rounded-2xl transition-all ${isSelected ? 'bg-emerald-500 text-white shadow-lg scale-110' : 'bg-white/5 text-slate-500 hover:bg-white/10 hover:text-slate-300'}`}>
+            <IconComp className="w-8 h-8" />
+            {isSeriesLens && !isSelected && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-500 rounded-full border-2 border-slate-900 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+              </div>
+            )}
+          </div>
+          <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${isSelected ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300'}`}>
+            {l}
+          </span>
         </button>
       </Tooltip>
     );
@@ -287,6 +350,36 @@ const App: React.FC = () => {
       </motion.header>
 
       <main>
+        <AnimatePresence>
+          {activeSeries && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-8 flex items-center justify-between glass-panel px-8 py-4 rounded-2xl border border-indigo-500/30 shadow-xl"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg">
+                  <Icons.Compass className="w-6 h-6" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono font-black text-indigo-300 uppercase tracking-widest block">Active Journey: {activeSeries.lens}</span>
+                  <span className="text-sm font-bold text-white">{activeSeries.topic} — Day {activeSeries.currentDay} of {activeSeries.totalDays}</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setActiveSeries(null);
+                  localStorage.removeItem('soul_piercer_active_series');
+                }}
+                className="px-6 py-3 bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-white/5 hover:border-red-500/20"
+              >
+                Cancel Journey
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {!hasKey && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -364,17 +457,31 @@ const App: React.FC = () => {
                     >
                       <span className="text-[10px] font-mono font-black text-emerald-400 uppercase tracking-widest">Journey Duration:</span>
                       <div className="flex gap-2">
-                        {[3, 7, 14, 21, 30].map(d => (
+                        {selectedLens === TacticalLens.LENT ? (
                           <button 
-                            key={d} 
-                            onClick={() => setJourneyDays(d)}
-                            className={`w-10 h-10 rounded-lg text-xs font-black transition-all ${journeyDays === d ? 'bg-emerald-500 text-white' : 'bg-white/5 text-slate-500 hover:text-slate-300'}`}
+                            className="w-10 h-10 rounded-lg text-xs font-black bg-emerald-500 text-white shadow-lg"
+                            disabled
                           >
-                            {d}
+                            40
                           </button>
-                        ))}
+                        ) : (
+                          [3, 7, 14, 21, 30].map(d => (
+                            <button 
+                              key={d} 
+                              onClick={() => setJourneyDays(d)}
+                              className={`w-10 h-10 rounded-lg text-xs font-black transition-all ${journeyDays === d ? 'bg-emerald-500 text-white' : 'bg-white/5 text-slate-500 hover:text-slate-300'}`}
+                            >
+                              {d}
+                            </button>
+                          ))
+                        )}
                       </div>
                       <span className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest">Days</span>
+                      {selectedLens === TacticalLens.LENT && (
+                        <span className="text-[10px] font-mono font-black text-emerald-300 uppercase tracking-widest ml-4 italic">
+                          (Lenten Season Fixed Duration)
+                        </span>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>

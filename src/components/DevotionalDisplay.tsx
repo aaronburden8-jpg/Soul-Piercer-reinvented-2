@@ -62,17 +62,24 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
             allowTaint: true,
             onclone: (clonedDoc: Document) => {
               // SCORCHED EARTH: Remove any oklch values that might leak in
+              const styleTags = clonedDoc.getElementsByTagName('style');
+              for (let i = 0; i < styleTags.length; i++) {
+                const tag = styleTags[i];
+                if (tag.innerHTML.includes('oklch')) {
+                  // Replace oklch with a safe fallback in the entire stylesheet
+                  tag.innerHTML = tag.innerHTML.replace(/oklch\([^)]+\)/g, '#888888');
+                }
+              }
+
               const elements = clonedDoc.getElementsByTagName('*');
               for (let i = 0; i < elements.length; i++) {
                 const el = elements[i] as HTMLElement;
                 if (el.style) {
-                  // If any style property contains oklch, we try to clear it or set a fallback
-                  // This is a bit aggressive but helps with libraries that inject oklch
                   for (let j = 0; j < el.style.length; j++) {
                     const prop = el.style[j];
                     const val = el.style.getPropertyValue(prop);
                     if (val && val.includes('oklch')) {
-                      el.style.setProperty(prop, ''); // Clear it so it falls back to inherited HEX
+                      el.style.setProperty(prop, '#888888'); 
                     }
                   }
                 }
