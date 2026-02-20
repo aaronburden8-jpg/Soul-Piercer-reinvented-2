@@ -58,13 +58,14 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
             scale: 2, 
             useCORS: true, 
             backgroundColor: '#ffffff',
-            letterRendering: true 
+            logging: false
         },
         jsPDF: { 
           unit: 'in', 
           format: 'letter', 
           orientation: 'portrait' as const 
-        }
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       // 3. GENERATE PDF
@@ -242,28 +243,28 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           {/* Sections */}
           <div className="space-y-12">
             {sections.map((section, idx) => (
-              <div key={idx} className="page-break-avoid">
+              <div key={idx} className="page-break-avoid" style={{ breakInside: 'avoid' }}>
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-4 h-1 bg-emerald-600"></div>
                   <h3 className="font-mono font-black text-emerald-700 uppercase tracking-[0.2em] text-xs">
                     {section.title}
                   </h3>
                 </div>
-                <div className="text-slate-900 prose prose-slate max-w-none">
+                <div className="text-slate-900 prose prose-slate max-w-none prose-p:break-inside-avoid">
                   <Markdown>{section.content}</Markdown>
                 </div>
               </div>
             ))}
 
             {diveContent && (
-              <div className="mt-16 pt-16 border-t border-slate-100 page-break-avoid">
+              <div className="mt-16 pt-16 border-t border-slate-100 page-break-avoid" style={{ breakInside: 'avoid' }}>
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-4 h-1 bg-slate-900"></div>
                   <h3 className="font-mono font-black text-slate-900 uppercase tracking-[0.2em] text-xs">
                     Theological Deep Dive Supplement
                   </h3>
                 </div>
-                <div className="text-slate-800 prose prose-slate max-w-none">
+                <div className="text-slate-800 prose prose-slate max-w-none prose-p:break-inside-avoid">
                   <Markdown>{diveContent}</Markdown>
                 </div>
               </div>
