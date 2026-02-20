@@ -58,7 +58,8 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
             scale: 2, 
             useCORS: true, 
             backgroundColor: '#ffffff',
-            logging: false
+            logging: false,
+            allowTaint: true
         },
         jsPDF: { 
           unit: 'in', 
