@@ -104,6 +104,8 @@ const App: React.FC = () => {
 
   const getSystemPrompt = (lens: TacticalLens, focusType: SpiritualFocus, topic: string) => {
     const baseConstraint = `CONTEXT: You are a peaceful spiritual sharpening tool. "Soul Piercing" is a metaphor for the sharp and living Word of God (Hebrews 4:12). No mention of 'lenses' or 'models'. No signatures. 
+    STORYTELLING: Under the "THE STORY" header, write a deeply relatable, modern-day story or analogy that illustrates the human condition related to the topic. It should feel grounded and real.
+    THEOLOGY: Under the "THEOLOGICAL REFLECTION" header, tie the story back to the Word and the selected lens with profound theological depth. This is where you synthesize the narrative and the divine truth.
     SCRIPTURE: provide EXACTLY TWO relevant verses. Citation format: text (Citation). citations at the END of the verse text.`;
     
     let personaPrompt = `ACT AS: A spiritual guide. TONE: Soulful.`;
@@ -158,7 +160,7 @@ const App: React.FC = () => {
       ### Preamble
       ### THE WORD
       ### THE STORY
-      ### BIBLICAL REFLECTION
+      ### THEOLOGICAL REFLECTION
       ### THE EXCHANGE
       (FORMAT: You MUST use a bulleted list. Each item MUST start with a bolded "From/To" transition, followed by a colon, then the explanation.)
       ### THE PRAYER
@@ -379,7 +381,7 @@ const App: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] font-mono font-black text-indigo-300 uppercase tracking-widest block">Active Journey: {activeSeries.lens}</span>
-                  <span className="text-sm font-bold text-white">{activeSeries.topic} — Day {activeSeries.currentDay} of {activeSeries.totalDays}</span>
+                  <span className="text-sm font-bold text-white">{activeSeries.topic} - Day {activeSeries.currentDay} of {activeSeries.totalDays}</span>
                 </div>
               </div>
               <button 

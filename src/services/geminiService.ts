@@ -20,12 +20,13 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
         model,
         contents: prompt,
         config: {
+          systemInstruction: "You are a spiritual guide. Do not use long em dashes (—) in your output. Use standard dashes (-) or double dashes (--) instead.",
           temperature: 0.8,
           topP: 0.95,
         }
       });
       
-      const text = response.text;
+      const text = response.text?.replace(/—/g, '--');
       if (!text) throw new Error("Empty response received.");
       return text;
     } catch (err: any) {
@@ -55,6 +56,7 @@ export const generateDevotionalStream = async (prompt: string, onChunk: (text: s
       model,
       contents: prompt,
       config: {
+        systemInstruction: "You are a spiritual guide. Do not use long em dashes (—) in your output. Use standard dashes (-) or double dashes (--) instead.",
         temperature: 0.8,
         topP: 0.95,
         thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
@@ -62,7 +64,7 @@ export const generateDevotionalStream = async (prompt: string, onChunk: (text: s
     });
 
     for await (const chunk of responseStream) {
-      const text = chunk.text;
+      const text = chunk.text?.replace(/—/g, '--');
       if (text) onChunk(text);
     }
   } catch (err: any) {
@@ -86,12 +88,13 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
       model: 'gemini-3-pro-preview',
       contents: prompt,
       config: {
+        systemInstruction: "You are an expert theologian. Do not use long em dashes (—) in your output. Use standard dashes (-) or double dashes (--) instead.",
         thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
       }
     });
 
     for await (const chunk of responseStream) {
-      const text = chunk.text;
+      const text = chunk.text?.replace(/—/g, '--');
       if (text) onChunk(text);
     }
   } catch (err: any) {
@@ -109,14 +112,15 @@ export const generateSpeech = async (text: string, voice: string = 'Kore') => {
 
   const ai = new GoogleGenAI({ apiKey });
   
-  // Clean markdown for better TTS performance and less confusion for the model
+  // Clean markdown and truncate to avoid TTS limits (approx 4000 chars is safe)
   const cleanText = text
     .replace(/###\s+/g, '')
     .replace(/\*\*/g, '')
     .replace(/\*/g, '')
     .replace(/-\s+/g, '')
     .replace(/\[.*?\]\(.*?\)/g, '')
-    .trim();
+    .trim()
+    .slice(0, 4000);
 
   let attempts = 3;
   let waitTime = 2000;
@@ -125,7 +129,7 @@ export const generateSpeech = async (text: string, voice: string = 'Kore') => {
     try {
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash-preview-tts",
-        contents: `Read this devotional with a soulful, peaceful, and reverent tone: ${cleanText}`,
+        contents: [{ parts: [{ text: `Read this devotional with a soulful, peaceful, and reverent tone: ${cleanText}` }] }],
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: {
@@ -136,11 +140,21 @@ export const generateSpeech = async (text: string, voice: string = 'Kore') => {
         },
       });
 
-      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      // Search all parts for inlineData
+      const audioPart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
+      const base64Audio = audioPart?.inlineData?.data;
+      
       if (base64Audio) {
         return `data:audio/wav;base64,${base64Audio}`;
       }
-      throw new Error("No audio data received.");
+      
+      // If no audio but we have text, it might be a refusal or explanation
+      const textPart = response.candidates?.[0]?.content?.parts?.find(p => p.text);
+      if (textPart?.text) {
+        throw new Error(`Sanctuary voice refused: ${textPart.text}`);
+      }
+
+      throw new Error("No audio data received from the archives.");
     } catch (err: any) {
       const errStr = String(err).toLowerCase();
       const isRetryable = errStr.includes('429') || errStr.includes('quota') || errStr.includes('timeout') || errStr.includes('deadline');
