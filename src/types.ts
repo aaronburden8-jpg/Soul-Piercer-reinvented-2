@@ -7,7 +7,8 @@ export enum TacticalLens {
   WILDERNESS = 'Wilderness',
   MARRIAGE = 'Marriage',
   WHOLEHEART = 'Wholeheart',
-  LENT = 'Lent'
+  LENT = 'Lent',
+  YOUNG_ADULT = 'Young Adult'
 }
 
 export type SpiritualFocus = 'non-denominational' | 'catholic' | 'theosophist';
@@ -34,4 +35,5 @@ export interface ActiveSeries {
   totalDays: number;
   lens: TacticalLens;
   focus: SpiritualFocus;
+  lastStorySummary?: string;
 }

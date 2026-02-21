@@ -15,7 +15,8 @@ import {
   Play,
   ShieldCheck,
   Download,
-  ChevronRight
+  ChevronRight,
+  Zap
 } from 'lucide-react';
 import { TacticalLens } from './types';
 
@@ -27,7 +28,8 @@ export const LENS_CONFIG: Record<TacticalLens, { description: string, icon: any 
   [TacticalLens.WILDERNESS]: { description: "Surrender to the Spirit. Receive a unique, unpredictably generated meditation.", icon: Wind },
   [TacticalLens.MARRIAGE]: { description: "Walk the covenant together. Shared wisdom for unity and love.", icon: Heart },
   [TacticalLens.WHOLEHEART]: { description: "Embrace your undivided season. Wisdom for purpose and strength.", icon: Target },
-  [TacticalLens.LENT]: { description: "40 days of liturgical sharpening. Walk the covenant through prayer.", icon: Crosshair }
+  [TacticalLens.LENT]: { description: "40 days of liturgical sharpening. Walk the covenant through prayer.", icon: Crosshair },
+  [TacticalLens.YOUNG_ADULT]: { description: "Navigating the 18-30 journey. Wisdom for identity, purpose, and modern struggles.", icon: Zap }
 };
 
 export const Icons = {
@@ -49,4 +51,5 @@ export const Icons = {
   Wind,
   ShieldCheck,
   Download,
+  Zap
 };

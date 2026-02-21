@@ -8,9 +8,10 @@ import { generateDeepDiveStream, generateSpeech } from '../services/geminiServic
 
 interface Props {
   devotional: Devotional;
+  onNextDay?: () => void;
 }
 
-const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
+const DevotionalDisplay: React.FC<Props> = ({ devotional, onNextDay }) => {
   const [diveContent, setDiveContent] = useState<string>("");
   const [isDiving, setIsDiving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -179,6 +180,27 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
     return sections;
   };
 
+  const [diveStatus, setDiveStatus] = useState("Consulting the Archives...");
+
+  useEffect(() => {
+    let interval: number;
+    if (isDiving) {
+      const messages = [
+        "Consulting the Archives...",
+        "Parsing Ancient Context...",
+        "Decoding Archetypal Significance...",
+        "Synthesizing Theological Depth...",
+        "Unveiling Hidden Meanings..."
+      ];
+      let idx = 0;
+      interval = window.setInterval(() => {
+        idx = (idx + 1) % messages.length;
+        setDiveStatus(messages[idx]);
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isDiving]);
+
   const sections = parseSections(devotional.content);
 
   return (
@@ -216,6 +238,16 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           {isExporting ? <Icons.Loader className="w-5 h-5 animate-spin" /> : <Icons.Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />}
           {isExporting ? "TYPESETTING..." : "DOWNLOAD MANUSCRIPT"}
         </button>
+
+        {devotional.seriesDay && devotional.seriesTotal && devotional.seriesDay < devotional.seriesTotal && onNextDay && (
+          <button 
+            onClick={onNextDay}
+            className="px-8 py-4 bg-emerald-500 text-white font-mono font-black text-sm uppercase tracking-widest flex items-center gap-3 transition-all hover:scale-105 shadow-xl aura-glow group"
+          >
+            <Icons.ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            Continue to Day {devotional.seriesDay + 1}
+          </button>
+        )}
       </div>
 
       {audioUrl && (
@@ -271,7 +303,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
                 {diveContent ? <Markdown>{diveContent}</Markdown> : (
                   <div className="flex flex-col items-center py-10 gap-4 no-print">
                     <Icons.Loader className="w-10 h-10 text-emerald-400 animate-spin" />
-                    <p className="font-mono text-sm text-slate-500 uppercase tracking-widest animate-pulse">Consulting the Archives...</p>
+                    <p className="font-mono text-sm text-slate-500 uppercase tracking-widest animate-pulse">{diveStatus}</p>
                   </div>
                 )}
               </div>

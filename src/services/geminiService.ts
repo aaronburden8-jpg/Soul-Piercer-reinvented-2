@@ -6,7 +6,7 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
  * Senior Engineer Note: We instantiation GoogleGenAI inside each function to ensure it always
  * retrieves the most up-to-date process.env.API_KEY.
  */
-export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3-pro-preview') => {
+export const generateDevotionalText = async (prompt: string, model: string = 'gemini-3.1-pro-preview') => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) throw new Error("Sanctuary Key not detected.");
   
@@ -45,7 +45,7 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
   }
 };
 
-export const generateDevotionalStream = async (prompt: string, onChunk: (text: string) => void, model: string = 'gemini-3-pro-preview') => {
+export const generateDevotionalStream = async (prompt: string, onChunk: (text: string) => void, model: string = 'gemini-3.1-pro-preview') => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) throw new Error("Sanctuary Key not detected.");
   
@@ -57,9 +57,9 @@ export const generateDevotionalStream = async (prompt: string, onChunk: (text: s
       contents: prompt,
       config: {
         systemInstruction: "You are a spiritual guide. Do not use long em dashes (—) in your output. Use standard dashes (-) or double dashes (--) instead.",
-        temperature: 0.8,
-        topP: 0.95,
-        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
+        temperature: 0.7, // Slightly lower temperature for more consistent output
+        topP: 0.9,
+        // Removed thinkingConfig to use default (HIGH) for better reasoning in journeys
       }
     });
 
@@ -85,11 +85,11 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
   
   try {
     const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3.1-pro-preview',
       contents: prompt,
       config: {
         systemInstruction: "You are an expert theologian. Do not use long em dashes (—) in your output. Use standard dashes (-) or double dashes (--) instead.",
-        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
+        // Default thinkingLevel (HIGH) for theology
       }
     });
 

@@ -16,6 +16,7 @@ const pathways = [
 const seasons = [
   TacticalLens.MARRIAGE,
   TacticalLens.WHOLEHEART,
+  TacticalLens.YOUNG_ADULT,
   TacticalLens.LENT,
 ];
 
@@ -63,6 +64,7 @@ const App: React.FC = () => {
   const [selectedLens, setSelectedLens] = useState<TacticalLens>(TacticalLens.WILDERNESS);
   const [activeSeries, setActiveSeries] = useState<ActiveSeries | null>(null);
   const [hasKey, setHasKey] = useState(true);
+  const [status, setStatus] = useState<string | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -102,10 +104,27 @@ const App: React.FC = () => {
     }
   };
 
-  const getSystemPrompt = (lens: TacticalLens, focusType: SpiritualFocus, topic: string) => {
+  const getSystemPrompt = (lens: TacticalLens, focusType: SpiritualFocus, topic: string, currentDay?: number, totalDays?: number, lastStorySummary?: string) => {
+    let journeyArc = "";
+    if (currentDay && totalDays) {
+      const progress = currentDay / totalDays;
+      if (progress <= 0.25) {
+        journeyArc = "JOURNEY STAGE: The Awakening. Focus on identifying the surface-level struggle and the initial call to change.";
+      } else if (progress <= 0.5) {
+        journeyArc = "JOURNEY STAGE: The Descent. Explore the deeper, hidden roots of the struggle—the 'why' behind the 'what'.";
+      } else if (progress <= 0.75) {
+        journeyArc = "JOURNEY STAGE: The Turning Point. Focus on the pivot toward Christ, the surrender of the old way, and the first steps of the new way.";
+      } else {
+        journeyArc = "JOURNEY STAGE: The Culmination. Focus on the integration of truth, the victory in Christ, and the structural foundation for the future.";
+      }
+    }
+
     const baseConstraint = `CONTEXT: You are a peaceful spiritual sharpening tool. "Soul Piercing" is a metaphor for the sharp and living Word of God (Hebrews 4:12). No mention of 'lenses' or 'models'. No signatures. 
     STORYTELLING: Under the "THE STORY" header, write a deeply relatable, modern-day story or analogy that illustrates the human condition related to the topic. It should feel grounded and real.
+    VARIETY: Avoid repetitive tropes like "scrolling social media" or "comparing on Instagram" unless they are the primary focus. Use diverse settings (workplaces, nature, quiet rooms, community gatherings) and diverse characters. Each day of a journey MUST feel like a unique narrative.
+    ${lastStorySummary ? `PREVIOUS STORY CONTEXT: In the previous session, the story was about: "${lastStorySummary}". DO NOT repeat this theme or setting. Pivot to a completely different angle of the human experience.` : ""}
     THEOLOGY: Under the "THEOLOGICAL REFLECTION" header, tie the story back to the Word and the selected lens with profound theological depth. This is where you synthesize the narrative and the divine truth.
+    JOURNEY PROGRESSION: ${journeyArc || "Ensure the content builds logically on the previous days."} The final day should feel like a profound culmination of the entire journey.
     SCRIPTURE: provide EXACTLY TWO relevant verses. Citation format: text (Citation). citations at the END of the verse text.`;
     
     let personaPrompt = `ACT AS: A spiritual guide. TONE: Soulful.`;
@@ -153,6 +172,9 @@ const App: React.FC = () => {
       case TacticalLens.LENT:
         lensConstraint = "LENS: Lent. Focus on liturgical sharpening, repentance, and walking the covenant through the 40-day journey to the Cross.";
         break;
+      case TacticalLens.YOUNG_ADULT:
+        lensConstraint = "LENS: Young Adult (Ages 18-30). Focus on the unique transitions of early adulthood. Address struggles with identity, career anxiety, digital burnout, and finding authentic community. The story should be highly relatable to a 20-something navigating a complex world while seeking Christ.";
+        break;
     }
 
     return `${personaPrompt} ${theologyConstraint} ${lensConstraint} ${baseConstraint} 
@@ -185,10 +207,24 @@ const App: React.FC = () => {
 
     setLoading(true);
     setError(null);
+    const statusMessages = [
+      "Consulting the archives...",
+      "Weaving the narrative...",
+      "Synthesizing theological depth...",
+      "Aligning the spiritual compass...",
+      "Piercing the veil of the mundane...",
+      "Gathering scriptural wisdom...",
+      "Crafting the soul's mirror..."
+    ];
+    let statusIdx = 0;
+    const statusInterval = setInterval(() => {
+      statusIdx = (statusIdx + 1) % statusMessages.length;
+      setStatus(statusMessages[statusIdx]);
+    }, 3000);
 
     try {
       const isSeries = !!seriesContext || mode === 'journey' || activeLens === TacticalLens.LENT;
-      const prompt = `${getSystemPrompt(activeLens, activeFocus, finalTopic)} TOPIC: ${finalTopic} ${isSeries ? `SESSION: Day ${currentDay} of ${totalDays}` : ""}`;
+      const prompt = `${getSystemPrompt(activeLens, activeFocus, finalTopic, currentDay, totalDays, seriesContext?.lastStorySummary)} TOPIC: ${finalTopic} ${isSeries ? `SESSION: Day ${currentDay} of ${totalDays}` : ""}`;
 
       let accumulatedText = "";
       const devoId = `v4_${Date.now()}`;
@@ -209,8 +245,9 @@ const App: React.FC = () => {
       await generateDevotionalStream(prompt, (chunk) => {
         accumulatedText += chunk;
         setDevotional(prev => prev ? { ...prev, content: accumulatedText } : null);
-      }, 'gemini-3-pro-preview');
+      }, 'gemini-3.1-pro-preview');
       
+      clearInterval(statusInterval);
       const finalDevo: Devotional = {
         ...initialDevo,
         content: accumulatedText || "Transmission failed.",
@@ -218,19 +255,33 @@ const App: React.FC = () => {
       };
 
       setDevotional(finalDevo);
+      setStatus(null);
       const newHistory = [finalDevo, ...history].slice(0, 20);
       setHistory(newHistory);
       localStorage.setItem('soul_piercer_history', JSON.stringify(newHistory));
       
       if (isSeries) {
+        // Extract a brief summary of the story for the next day
+        const storyMatch = accumulatedText.match(/### THE STORY\s+([\s\S]*?)(?=###|$)/i);
+        const storyText = storyMatch ? storyMatch[1].trim().slice(0, 200) : "";
+
         if (!seriesContext) {
           const newSeries: ActiveSeries = {
-            topic: finalTopic, currentDay: 2, totalDays, lens: activeLens, focus: activeFocus
+            topic: finalTopic, 
+            currentDay: 2, 
+            totalDays, 
+            lens: activeLens, 
+            focus: activeFocus,
+            lastStorySummary: storyText
           };
           setActiveSeries(newSeries);
           localStorage.setItem('soul_piercer_active_series', JSON.stringify(newSeries));
         } else if (currentDay < totalDays) {
-          const updatedSeries = { ...seriesContext, currentDay: currentDay + 1 };
+          const updatedSeries = { 
+            ...seriesContext, 
+            currentDay: currentDay + 1,
+            lastStorySummary: storyText
+          };
           setActiveSeries(updatedSeries);
           localStorage.setItem('soul_piercer_active_series', JSON.stringify(updatedSeries));
         } else {
@@ -243,6 +294,8 @@ const App: React.FC = () => {
       setInput("");
       // window.scrollTo({ top: 0, behavior: 'smooth' }); // Removed to avoid jumping during stream
     } catch (err: any) {
+      clearInterval(statusInterval);
+      setStatus(null);
       let msg = err.message || "An unknown error occurred.";
       const errStr = msg.toLowerCase();
       
@@ -512,15 +565,24 @@ const App: React.FC = () => {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey && !loading) {
                       e.preventDefault();
-                      handleGenerate();
+                      handleGenerate(activeSeries && !input.trim() ? activeSeries : undefined);
                     }
                   }}
                   placeholder="Enter your prayer or study focus..." 
                   className="w-full glass-panel rounded-[3rem] p-16 text-3xl font-serif-display italic text-white placeholder:text-slate-700 focus:outline-none min-h-[400px] resize-none leading-relaxed" 
                 />
-                <button onClick={() => handleGenerate()} disabled={loading} className="absolute bottom-12 right-12 px-16 py-6 rounded-2xl bg-emerald-500 text-white font-mono font-black uppercase tracking-widest shadow-2xl transition-all hover:scale-105 disabled:opacity-20 flex items-center gap-4">
+                <button 
+                  onClick={() => handleGenerate(activeSeries && !input.trim() ? activeSeries : undefined)} 
+                  disabled={loading} 
+                  className="absolute bottom-12 right-12 px-16 py-6 rounded-2xl bg-emerald-500 text-white font-mono font-black uppercase tracking-widest shadow-2xl transition-all hover:scale-105 disabled:opacity-20 flex items-center gap-4"
+                >
                   {loading ? <Icons.Loader className="w-6 h-6 animate-spin" /> : <Icons.Send className="w-6 h-6" />}
-                  {loading ? "COMMUNING..." : "SEEK GUIDANCE"}
+                  {loading 
+                    ? "COMMUNING..." 
+                    : (activeSeries && !input.trim()) 
+                      ? `CONTINUE DAY ${activeSeries.currentDay}` 
+                      : "SEEK GUIDANCE"
+                  }
                 </button>
               </div>
             </motion.div>
@@ -534,11 +596,28 @@ const App: React.FC = () => {
               <button onClick={() => setDevotional(null)} className="mb-10 text-slate-400 hover:text-white font-mono text-sm uppercase tracking-widest flex items-center gap-2 font-black transition-colors group">
                 <Icons.ChevronRight className="rotate-180 w-6 h-6 group-hover:-translate-x-1 transition-transform" /> Back to Sanctuary
               </button>
-              <DevotionalDisplay devotional={devotional} />
+              <DevotionalDisplay 
+                devotional={devotional} 
+                onNextDay={activeSeries ? () => handleGenerate(activeSeries) : undefined}
+              />
             </motion.div>
           )}
         </AnimatePresence>
       </main>
+
+      <AnimatePresence>
+        {status && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 glass-panel px-8 py-4 rounded-2xl border border-emerald-500/30 flex items-center gap-4 z-50 shadow-2xl"
+          >
+            <Icons.Loader className="w-5 h-5 text-emerald-400 animate-spin" />
+            <span className="text-[10px] font-mono font-black text-emerald-400 uppercase tracking-[0.2em]">{status}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
