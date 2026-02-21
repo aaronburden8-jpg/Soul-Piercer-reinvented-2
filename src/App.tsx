@@ -132,6 +132,7 @@ const App: React.FC = () => {
     }
 
     const baseConstraint = `CONTEXT: You are a peaceful spiritual sharpening tool. "Soul Piercing" is a metaphor for the sharp and living Word of God (Hebrews 4:12). No mention of 'lenses' or 'models'. No signatures. 
+    NO PREAMBLE: Do NOT include any introductory text, greetings, or "Welcome to Day X" messages. Start immediately with the first header.
     STORYTELLING (THEOLOGICAL FICTION): Under the "THE STORY" header, write a deeply grounded, scripture-based narrative. 
     UNIVERSAL RULE: ELIMINATE all modern-day archetypes (e.g., social media, modern offices, cars, tech). Frame everything in a historical, biblical, or parable-based world.
     ANTI-OBVIOUS ROTATION: Actively avoid the most statistically obvious biblical figure for this topic/lens (e.g., if the topic is 'Giant Killing', do NOT use David). Find a fresh, deep-cut biblical parallel or a unique historical setting from the biblical era.

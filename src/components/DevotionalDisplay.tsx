@@ -39,6 +39,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional, onNextDay }) => {
   const downloadPdf = async () => {
     if (!phantomRef.current) return;
     setIsExporting(true);
+    window.scrollTo(0, 0);
 
     try {
       const element = phantomRef.current;
@@ -55,17 +56,19 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional, onNextDay }) => {
       
       const opt = {
         margin: 0.5,
-        filename: `SoulPiercer_Manuscript_${devotional.input.slice(0, 10).replace(/\s+/g, '_')}.pdf`,
+        filename: `SoulPiercer_Manuscript_${devotional.input.slice(0, 15).replace(/\s+/g, '_')}.pdf`,
         image: { 
           type: 'jpeg' as const, 
-          quality: 0.98 
+          quality: 1.0 
         },
         html2canvas: { 
-            scale: 2, 
+            scale: 3, 
             useCORS: true, 
             backgroundColor: '#ffffff',
             logging: false,
             allowTaint: true,
+            scrollX: 0,
+            scrollY: 0,
             onclone: (clonedDoc: Document) => {
               // SCORCHED EARTH: Remove any oklch values that might leak in
               const styleTags = clonedDoc.getElementsByTagName('style');
@@ -81,6 +84,10 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional, onNextDay }) => {
               for (let i = 0; i < elements.length; i++) {
                 const el = elements[i] as HTMLElement;
                 
+                // Disable transitions and animations
+                el.style.transition = 'none';
+                el.style.animation = 'none';
+                
                 // Check inline styles
                 if (el.style) {
                   for (let j = 0; j < el.style.length; j++) {
@@ -93,7 +100,6 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional, onNextDay }) => {
                 }
 
                 // Check computed styles and override if they contain oklch
-                // This is more expensive but catches values from external stylesheets
                 try {
                   const computed = window.getComputedStyle(el);
                   const propertiesToCheck = ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke', 'backgroundImage'];
@@ -103,18 +109,17 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional, onNextDay }) => {
                       el.style.setProperty(prop.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`), '#888888');
                     }
                   });
-                } catch (e) {
-                  // Ignore errors for elements that don't support getComputedStyle
-                }
+                } catch (e) {}
               }
             }
         },
         jsPDF: { 
           unit: 'in', 
           format: 'letter', 
-          orientation: 'portrait' as const 
+          orientation: 'portrait' as const,
+          compress: true
         },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        pagebreak: { mode: 'css', before: '.page-break-before', after: '.page-break-after', avoid: '.page-break-avoid' }
       };
 
       // 3. GENERATE PDF
@@ -167,10 +172,7 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional, onNextDay }) => {
     if (!markdown) return [];
     const parts = markdown.split(/^###\s+(.+)$/gm);
     const sections = [];
-    const firstPart = parts[0].trim();
-    if (firstPart && firstPart !== "Transmission failed.") {
-      sections.push({ title: "Foundational Insight", content: firstPart });
-    }
+    // Skip parts[0] as it's the text before the first ### header (the preamble)
     for (let i = 1; i < parts.length; i += 2) {
       sections.push({
         title: parts[i].trim(),
@@ -313,11 +315,11 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional, onNextDay }) => {
       </div>
 
       {/* PHANTOM MANUSCRIPT FOR PDF (HIDDEN FROM WEB UI) */}
-      <div style={{ position: 'absolute', left: '-10000px', top: '-10000px' }}>
+      <div style={{ position: 'fixed', left: '-100vw', top: 0, zIndex: -1000 }}>
         <div 
           ref={phantomRef} 
           className="bg-white text-slate-900 font-serif"
-          style={{ width: '210mm', minHeight: '297mm', padding: '30mm 25mm', boxSizing: 'border-box', overflow: 'hidden' }}
+          style={{ width: '210mm', padding: '30mm 25mm', boxSizing: 'border-box' }}
         >
           {/* Header */}
           <div className="border-b-2 border-emerald-600 pb-8 mb-12 flex justify-between items-end">
