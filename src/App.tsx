@@ -106,25 +106,38 @@ const App: React.FC = () => {
 
   const getSystemPrompt = (lens: TacticalLens, focusType: SpiritualFocus, topic: string, currentDay?: number, totalDays?: number, lastStorySummary?: string) => {
     let journeyArc = "";
+    let seriesInstruction = "";
+    
     if (currentDay && totalDays) {
       const progress = currentDay / totalDays;
-      if (progress <= 0.25) {
-        journeyArc = "JOURNEY STAGE: The Awakening. Focus on identifying the surface-level struggle and the initial call to change.";
+      if (currentDay === 1) {
+        journeyArc = "JOURNEY STAGE: The Awakening. Establish the unique historical/biblical world and character. Introduce the core tension.";
       } else if (progress <= 0.5) {
-        journeyArc = "JOURNEY STAGE: The Descent. Explore the deeper, hidden roots of the struggle—the 'why' behind the 'what'.";
+        journeyArc = "JOURNEY STAGE: The Descent. Explore the deeper, hidden roots of the struggle within the established world.";
+      } else if (currentDay === Math.floor(totalDays * 0.6) || currentDay === 4) {
+        journeyArc = "JOURNEY STAGE: The Crisis. A major turning point or crisis in the story introduced on Day 1. The stakes are at their highest.";
       } else if (progress <= 0.75) {
-        journeyArc = "JOURNEY STAGE: The Turning Point. Focus on the pivot toward Christ, the surrender of the old way, and the first steps of the new way.";
+        journeyArc = "JOURNEY STAGE: The Turning Point. Focus on the pivot toward Christ and the surrender of the old way within the narrative.";
       } else {
-        journeyArc = "JOURNEY STAGE: The Culmination. Focus on the integration of truth, the victory in Christ, and the structural foundation for the future.";
+        journeyArc = "JOURNEY STAGE: The Culmination. Provide the theological culmination and resolution of the specific story arc established on Day 1.";
       }
+
+      if (lastStorySummary) {
+        seriesInstruction = `ANCHOR LOCKING: You MUST continue the EXACT SAME story, world, and character established in previous sessions. 
+        PREVIOUS CONTEXT: ${lastStorySummary}
+        Maintain narrative continuity. Do not introduce a new world.`;
+      }
+    } else {
+      journeyArc = "SINGLE-DAY MODE: Generate a complete, self-contained scripture-grounded story that introduces the theological concept, explores the tension, and resolves the application within this one entry.";
     }
 
     const baseConstraint = `CONTEXT: You are a peaceful spiritual sharpening tool. "Soul Piercing" is a metaphor for the sharp and living Word of God (Hebrews 4:12). No mention of 'lenses' or 'models'. No signatures. 
-    STORYTELLING: Under the "THE STORY" header, write a deeply relatable, modern-day story or analogy that illustrates the human condition related to the topic. It should feel grounded and real.
-    VARIETY: Avoid repetitive tropes like "scrolling social media" or "comparing on Instagram" unless they are the primary focus. Use diverse settings (workplaces, nature, quiet rooms, community gatherings) and diverse characters. Each day of a journey MUST feel like a unique narrative.
-    ${lastStorySummary ? `PREVIOUS STORY CONTEXT: In the previous session, the story was about: "${lastStorySummary}". DO NOT repeat this theme or setting. Pivot to a completely different angle of the human experience.` : ""}
-    THEOLOGY: Under the "THEOLOGICAL REFLECTION" header, tie the story back to the Word and the selected lens with profound theological depth. This is where you synthesize the narrative and the divine truth.
-    JOURNEY PROGRESSION: ${journeyArc || "Ensure the content builds logically on the previous days."} The final day should feel like a profound culmination of the entire journey.
+    STORYTELLING (THEOLOGICAL FICTION): Under the "THE STORY" header, write a deeply grounded, scripture-based narrative. 
+    UNIVERSAL RULE: ELIMINATE all modern-day archetypes (e.g., social media, modern offices, cars, tech). Frame everything in a historical, biblical, or parable-based world.
+    ANTI-OBVIOUS ROTATION: Actively avoid the most statistically obvious biblical figure for this topic/lens (e.g., if the topic is 'Giant Killing', do NOT use David). Find a fresh, deep-cut biblical parallel or a unique historical setting from the biblical era.
+    THEOLOGY: Under the "THEOLOGICAL REFLECTION" header, tie the story back to the Word and the selected lens with profound theological depth. This reflection must be biblically grounded and non-fiction, synthesizing the narrative's truth with Christ-centered doctrine.
+    JOURNEY PROGRESSION: ${journeyArc}
+    ${seriesInstruction}
     SCRIPTURE: provide EXACTLY TWO relevant verses. Citation format: text (Citation). citations at the END of the verse text.`;
     
     let personaPrompt = `ACT AS: A spiritual guide. TONE: Soulful.`;
@@ -149,31 +162,31 @@ const App: React.FC = () => {
     let lensConstraint = "";
     switch(lens) {
       case TacticalLens.EXPLORER:
-        lensConstraint = "LENS: Explorer. Focus on discovery, broad biblical horizons, and opening new doors of meditation.";
+        lensConstraint = "LENS: Explorer. WORLD: Ancient exploration and discovery. Focus on broad biblical horizons, discovering new lands, and the courage to leave the familiar (e.g., Abrahamic journeys, Pauline travels).";
         break;
       case TacticalLens.STRATEGIST:
-        lensConstraint = "LENS: Strategist. Focus on scriptural wisdom for overcoming obstacles and practical spiritual warfare.";
+        lensConstraint = "LENS: Strategist. WORLD: Ancient logistics, kingship, and spiritual warfare. Focus on scriptural wisdom for overcoming obstacles in a world of walled cities and desert campaigns.";
         break;
       case TacticalLens.ARCHITECT:
-        lensConstraint = "LENS: Architect. Focus on building life on the solid foundation of Christ and structural spiritual growth.";
+        lensConstraint = "LENS: Architect. WORLD: Construction of the Temple, the Tabernacle, or ancient cities. Focus on building life on the solid foundation of Christ through structural spiritual growth.";
         break;
       case TacticalLens.HEALER:
-        lensConstraint = "LENS: Healer. Focus on restoration, comfort, and emotional alignment in the Word.";
+        lensConstraint = "LENS: Healer. WORLD: Ancient medicine, pools of healing, and leper colonies. Focus on restoration, comfort, and emotional alignment in the shadow of the Great Physician.";
         break;
       case TacticalLens.WILDERNESS:
-        lensConstraint = "LENS: Wilderness. Surrender to the Spirit. Provide a unique, raw, and unpredictably generated meditation that feels like a voice in the desert.";
+        lensConstraint = "LENS: Wilderness. WORLD: Old Testament desert survival and prophetic isolation. Focus on surrender to the Spirit in raw, unforgiving landscapes.";
         break;
       case TacticalLens.MARRIAGE:
-        lensConstraint = "LENS: Marriage. Focus on the covenant of marriage. Write as if a couple is reading this together. Use 'we', 'us', and 'our' in the reflections and prayer. Address the specific dynamics of unity, love, and shared spiritual growth.";
+        lensConstraint = "LENS: Marriage. WORLD: Ancient covenantal weddings and patriarchal households. Focus on the unity, love, and shared spiritual growth within a biblical-era household.";
         break;
       case TacticalLens.WHOLEHEART:
-        lensConstraint = "LENS: Wholeheart. Focus on the season of singleness. Provide encouragement, purpose, and strength for an undivided heart. Address the unique beauty and challenges of being single with a focus on wholeness in Christ.";
+        lensConstraint = "LENS: Wholeheart. WORLD: Undivided devotion in ancient settings (e.g., Temple service, exile in foreign courts). Focus on wholeness in Christ during seasons of singleness.";
         break;
       case TacticalLens.LENT:
-        lensConstraint = "LENS: Lent. Focus on liturgical sharpening, repentance, and walking the covenant through the 40-day journey to the Cross.";
+        lensConstraint = "LENS: Lent. WORLD: The 40-day journey to the Cross or early church liturgical sharpening. Focus on repentance and walking the covenant path.";
         break;
       case TacticalLens.YOUNG_ADULT:
-        lensConstraint = "LENS: Young Adult (Ages 18-30). Focus on the unique transitions of early adulthood. Address struggles with identity, career anxiety, digital burnout, and finding authentic community. The story should be highly relatable to a 20-something navigating a complex world while seeking Christ.";
+        lensConstraint = "LENS: Young Adult. WORLD: Early church discipleship or navigating foreign empires (e.g., Timothy in Ephesus, Daniel in Babylon). Focus on identity, purpose, and faith in a complex, non-Christian world.";
         break;
     }
 
@@ -261,9 +274,9 @@ const App: React.FC = () => {
       localStorage.setItem('soul_piercer_history', JSON.stringify(newHistory));
       
       if (isSeries) {
-        // Extract a brief summary of the story for the next day
+        // Extract a more robust summary of the story for anchor locking
         const storyMatch = accumulatedText.match(/### THE STORY\s+([\s\S]*?)(?=###|$)/i);
-        const storyText = storyMatch ? storyMatch[1].trim().slice(0, 200) : "";
+        const storyText = storyMatch ? storyMatch[1].trim().slice(0, 500) : "";
 
         if (!seriesContext) {
           const newSeries: ActiveSeries = {
@@ -569,7 +582,7 @@ const App: React.FC = () => {
                     }
                   }}
                   placeholder="Enter your prayer or study focus..." 
-                  className="w-full glass-panel rounded-[3rem] p-16 text-3xl font-serif-display italic text-white placeholder:text-slate-700 focus:outline-none min-h-[400px] resize-none leading-relaxed" 
+                  className="w-full glass-panel rounded-[3rem] p-16 text-3xl font-serif-display italic text-white placeholder:text-slate-400 focus:outline-none min-h-[400px] resize-none leading-relaxed" 
                 />
                 <button 
                   onClick={() => handleGenerate(activeSeries && !input.trim() ? activeSeries : undefined)} 

@@ -5,8 +5,8 @@
   --color-*: initial; 
 
   /* The Sanctuary Palette - Stable HEX Versions */
-  --color-background: #020617; /* Deepest Midnight */
-  --color-surface: #1e293b;    /* Slate Gray for cards */
+  --color-background: #1e293b; /* Brightened from #020617 (Slate 800) */
+  --color-surface: #334155;    /* Brightened from #1e293b (Slate 700) */
   --color-primary: #10b981;    /* Vibrant Emerald for 'Seek Guidance' */
   --color-secondary: #6366f1;  /* Indigo for buttons */
   --color-accent: #f59e0b;     /* Amber for icons */
@@ -202,21 +202,21 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: #0f172a;
+  background-color: #1e293b; /* Brightened from #0f172a */
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
-  color: #f1f5f9;
+    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+  color: #f8fafc;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
 .glass-panel {
-  background: rgba(30, 41, 59, 0.6);
+  background: rgba(51, 65, 85, 0.7); /* Brightened from rgba(30, 41, 59, 0.6) */
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .luminous-gradient {
