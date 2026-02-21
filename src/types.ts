@@ -25,6 +25,7 @@ export interface Devotional {
   lens: string;
   seriesDay?: number;
   seriesTotal?: number;
+  isComplete?: boolean;
 }
 
 export interface ActiveSeries {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Icons, LENS_CONFIG } from './constants';
 import { Devotional, ActiveSeries, TacticalLens, SpiritualFocus } from './types';
-import { generateDevotionalText } from './services/geminiService';
+import { generateDevotionalText, generateDevotionalStream } from './services/geminiService';
 import DevotionalDisplay from './components/DevotionalDisplay';
 
 const pathways = [
@@ -188,20 +188,35 @@ const App: React.FC = () => {
       const isSeries = !!seriesContext || mode === 'journey' || activeLens === TacticalLens.LENT;
       const prompt = `${getSystemPrompt(activeLens, activeFocus, finalTopic)} TOPIC: ${finalTopic} ${isSeries ? `SESSION: Day ${currentDay} of ${totalDays}` : ""}`;
 
-      const text = await generateDevotionalText(prompt, 'gemini-3-pro-preview');
+      let accumulatedText = "";
+      const devoId = `v4_${Date.now()}`;
       
-      const newDevo: Devotional = {
-        id: `v4_${Date.now()}`,
-        content: text || "Transmission failed.",
+      // Initialize the devotional object so it shows up immediately and starts streaming
+      const initialDevo: Devotional = {
+        id: devoId,
+        content: "",
         timestamp: Date.now(),
         input: finalTopic,
         lens: activeLens,
         seriesDay: isSeries ? currentDay : undefined,
-        seriesTotal: isSeries ? totalDays : undefined
+        seriesTotal: isSeries ? totalDays : undefined,
+        isComplete: false
+      };
+      setDevotional(initialDevo);
+
+      await generateDevotionalStream(prompt, (chunk) => {
+        accumulatedText += chunk;
+        setDevotional(prev => prev ? { ...prev, content: accumulatedText } : null);
+      }, 'gemini-3-pro-preview');
+      
+      const finalDevo: Devotional = {
+        ...initialDevo,
+        content: accumulatedText || "Transmission failed.",
+        isComplete: true
       };
 
-      setDevotional(newDevo);
-      const newHistory = [newDevo, ...history].slice(0, 20);
+      setDevotional(finalDevo);
+      const newHistory = [finalDevo, ...history].slice(0, 20);
       setHistory(newHistory);
       localStorage.setItem('soul_piercer_history', JSON.stringify(newHistory));
       
@@ -224,7 +239,7 @@ const App: React.FC = () => {
 
       setMomentum(prev => prev + 1);
       setInput("");
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // window.scrollTo({ top: 0, behavior: 'smooth' }); // Removed to avoid jumping during stream
     } catch (err: any) {
       let msg = err.message || "An unknown error occurred.";
       const errStr = msg.toLowerCase();

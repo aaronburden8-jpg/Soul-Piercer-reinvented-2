@@ -1,4 +1,4 @@
-import { GoogleGenAI, Modality } from "@google/genai";
+import { GoogleGenAI, Modality, ThinkingLevel } from "@google/genai";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -44,6 +44,32 @@ export const generateDevotionalText = async (prompt: string, model: string = 'ge
   }
 };
 
+export const generateDevotionalStream = async (prompt: string, onChunk: (text: string) => void, model: string = 'gemini-3-pro-preview') => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) throw new Error("Sanctuary Key not detected.");
+  
+  const ai = new GoogleGenAI({ apiKey });
+  
+  try {
+    const responseStream = await ai.models.generateContentStream({
+      model,
+      contents: prompt,
+      config: {
+        temperature: 0.8,
+        topP: 0.95,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
+      }
+    });
+
+    for await (const chunk of responseStream) {
+      const text = chunk.text;
+      if (text) onChunk(text);
+    }
+  } catch (err: any) {
+    throw err;
+  }
+};
+
 export const generateDeepDiveStream = async (content: string, onChunk: (text: string) => void) => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) throw new Error("Sanctuary Key missing.");
@@ -59,6 +85,9 @@ export const generateDeepDiveStream = async (content: string, onChunk: (text: st
     const responseStream = await ai.models.generateContentStream({
       model: 'gemini-3-pro-preview',
       contents: prompt,
+      config: {
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
+      }
     });
 
     for await (const chunk of responseStream) {
@@ -80,27 +109,52 @@ export const generateSpeech = async (text: string, voice: string = 'Kore') => {
 
   const ai = new GoogleGenAI({ apiKey });
   
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
-      contents: `Read this devotional with a soulful, peaceful, and reverent tone: ${text}`,
-      config: {
-        responseModalities: [Modality.AUDIO],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: voice },
+  // Clean markdown for better TTS performance and less confusion for the model
+  const cleanText = text
+    .replace(/###\s+/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .replace(/-\s+/g, '')
+    .replace(/\[.*?\]\(.*?\)/g, '')
+    .trim();
+
+  let attempts = 3;
+  let waitTime = 2000;
+
+  while (attempts > 0) {
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash-preview-tts",
+        contents: `Read this devotional with a soulful, peaceful, and reverent tone: ${cleanText}`,
+        config: {
+          responseModalities: [Modality.AUDIO],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: voice },
+            },
           },
         },
-      },
-    });
+      });
 
-    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    if (base64Audio) {
-      return `data:audio/wav;base64,${base64Audio}`;
+      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      if (base64Audio) {
+        return `data:audio/wav;base64,${base64Audio}`;
+      }
+      throw new Error("No audio data received.");
+    } catch (err: any) {
+      const errStr = String(err).toLowerCase();
+      const isRetryable = errStr.includes('429') || errStr.includes('quota') || errStr.includes('timeout') || errStr.includes('deadline');
+      
+      if (isRetryable && attempts > 1) {
+        console.warn(`[TTS_RETRY] Conjuring voice failed. Retrying in ${waitTime}ms... (${attempts} remaining)`);
+        await sleep(waitTime);
+        attempts--;
+        waitTime *= 2;
+        continue;
+      }
+      console.error("TTS Error:", err);
+      throw err;
     }
-    throw new Error("No audio data received.");
-  } catch (err: any) {
-    console.error("TTS Error:", err);
-    throw err;
   }
+  throw new Error("Failed to conjure voice after multiple attempts.");
 };

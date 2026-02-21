@@ -16,19 +16,24 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const hasStartedDive = useRef<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const phantomRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    if (!hasStartedDive.current) {
-      const timer = setTimeout(() => {
-        startDeepDive();
-      }, 7000); 
-      return () => clearTimeout(timer);
-    }
+    setDiveContent("");
+    setAudioUrl(null);
+    hasStartedDive.current = false;
   }, [devotional.id]);
+
+  useEffect(() => {
+    const isFinished = devotional.isComplete !== false;
+    if (isFinished && !hasStartedDive.current) {
+      startDeepDive();
+    }
+  }, [devotional.id, devotional.isComplete]);
 
   const downloadPdf = async () => {
     if (!phantomRef.current) return;
@@ -74,6 +79,8 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
               const elements = clonedDoc.getElementsByTagName('*');
               for (let i = 0; i < elements.length; i++) {
                 const el = elements[i] as HTMLElement;
+                
+                // Check inline styles
                 if (el.style) {
                   for (let j = 0; j < el.style.length; j++) {
                     const prop = el.style[j];
@@ -82,6 +89,21 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
                       el.style.setProperty(prop, '#888888'); 
                     }
                   }
+                }
+
+                // Check computed styles and override if they contain oklch
+                // This is more expensive but catches values from external stylesheets
+                try {
+                  const computed = window.getComputedStyle(el);
+                  const propertiesToCheck = ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke', 'backgroundImage'];
+                  propertiesToCheck.forEach(prop => {
+                    const val = (computed as any)[prop];
+                    if (typeof val === 'string' && val.includes('oklch')) {
+                      el.style.setProperty(prop.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`), '#888888');
+                    }
+                  });
+                } catch (e) {
+                  // Ignore errors for elements that don't support getComputedStyle
                 }
               }
             }
@@ -128,11 +150,13 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
   const handleGenerateAudio = async () => {
     if (audioUrl || isGeneratingAudio) return;
     setIsGeneratingAudio(true);
+    setAudioError(null);
     try {
       const url = await generateSpeech(devotional.content);
-      setAudioUrl(url);
-    } catch (err) {
+      if (url) setAudioUrl(url);
+    } catch (err: any) {
       console.error("Audio generation failed:", err);
+      setAudioError("The voice archives are momentarily silent. Please try again in a moment.");
     } finally {
       setIsGeneratingAudio(false);
     }
@@ -169,6 +193,20 @@ const DevotionalDisplay: React.FC<Props> = ({ devotional }) => {
           {isGeneratingAudio ? <Icons.Loader className="w-5 h-5 animate-spin" /> : <Icons.Play className="w-5 h-5 group-hover:scale-110 transition-transform" />}
           {isGeneratingAudio ? "CONJURING VOICE..." : audioUrl ? "NARRATION READY" : "NARRATE MANUSCRIPT"}
         </button>
+
+        <AnimatePresence>
+          {audioError && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="px-4 py-2 bg-red-500/10 border border-red-500/30 rounded-xl text-[10px] font-mono font-black text-red-400 uppercase tracking-widest flex items-center gap-2"
+            >
+              <Icons.ShieldAlert className="w-4 h-4" />
+              {audioError}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <button 
           onClick={downloadPdf} 
